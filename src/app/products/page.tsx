@@ -113,9 +113,15 @@ export default function ProductsPage() {
                 <p className="mt-4 text-xl font-black text-blue-900">
                   {formatPrice(product.price)}
                 </p>
+                <a
+                  href={`/products/${product.id}/`}
+                  className="mt-4 block w-full rounded-lg border border-blue-800 px-4 py-3 text-center font-bold text-blue-800 hover:bg-blue-50"
+                >
+                  View Details
+                </a>
                 <button
                   onClick={() => addToCart(product.id)}
-                  className="mt-4 w-full rounded-lg bg-blue-800 px-4 py-3 font-bold text-white hover:bg-blue-900"
+                  className="mt-3 w-full rounded-lg bg-blue-800 px-4 py-3 font-bold text-white hover:bg-blue-900"
                 >
                   + Add to Cart
                 </button>
