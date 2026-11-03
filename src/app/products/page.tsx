@@ -38,7 +38,7 @@ export default function ProductsPage() {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <header className="bg-slate-950 px-6 py-5 text-white">
+      <header className="sticky top-0 z-50 bg-slate-950 px-6 py-5 text-white">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
           <a href="/" className="text-2xl font-black text-white">
             CHITRANYA<span className="text-orange-500">.</span>
