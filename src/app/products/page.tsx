@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 
@@ -25,6 +25,12 @@ export default function ProductsPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const { addToCart, itemCount } = useCart();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const initialSearch = params.get("search");
+    if (initialSearch) setSearch(initialSearch);
+  }, []);
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
