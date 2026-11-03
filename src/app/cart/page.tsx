@@ -71,7 +71,11 @@ export default function CartPage() {
           <div className="my-5 border-t" />
           <div className="flex justify-between text-lg font-black"><span>Total</span><span className="text-blue-900">{formatPrice(subtotal)}</span></div>
           <p className="mt-3 text-xs text-slate-500">Delivery charges, if any, will be confirmed during checkout.</p>
-          <button disabled className="mt-6 w-full cursor-not-allowed rounded-lg bg-slate-300 px-5 py-4 font-bold text-slate-600">Checkout — Coming Next</button>
+          {items.length > 0 ? (
+            <Link href="/checkout/" className="mt-6 block w-full rounded-lg bg-orange-500 px-5 py-4 text-center font-bold text-white hover:bg-orange-600">Proceed to Checkout</Link>
+          ) : (
+            <button disabled className="mt-6 w-full cursor-not-allowed rounded-lg bg-slate-300 px-5 py-4 font-bold text-slate-600">Proceed to Checkout</button>
+          )}
           <Link href="/products/" className="mt-4 block text-center font-semibold text-blue-700 hover:text-blue-900">Continue Shopping</Link>
         </aside>
       </section>
