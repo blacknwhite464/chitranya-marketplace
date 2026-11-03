@@ -6,6 +6,12 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    "cleanUrls": false
+    "cleanUrls": false,
+    "rewrites": [
+      {
+        "source": "/admin/**",
+        "destination": "/admin/index.html"
+      }
+    ]
   }
 }
