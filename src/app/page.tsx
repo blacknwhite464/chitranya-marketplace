@@ -48,6 +48,7 @@ export default function Home() {
           <nav className="flex flex-wrap gap-5 text-sm font-semibold">
             <a href="#" className="hover:text-blue-700">Home</a>
             <a href="/products/" className="hover:text-blue-700">Products</a>
+            <a href="/cart/" className="hover:text-blue-700">🛒 Cart</a>
             <a href="#electronics" className="hover:text-blue-700">Electronics</a>
             <a href="#hardware" className="hover:text-blue-700">Hardware</a>
             <a href="#services" className="hover:text-blue-700">Services</a>
