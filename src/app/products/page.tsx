@@ -2,6 +2,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useCart } from "@/context/CartContext";
 
 const products = [
   { id: 1, name: "Smart LED Television", category: "Electronics", price: 45000, emoji: "📺", description: "Modern smart television for your home." },
@@ -22,7 +24,7 @@ const formatPrice = (price: number) =>
 export default function ProductsPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
-  const [cart, setCart] = useState<number[]>([]);
+  const { addToCart, itemCount } = useCart();
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
@@ -31,10 +33,6 @@ export default function ProductsPage() {
       return matchesSearch && matchesCategory;
     });
   }, [search, category]);
-
-  function addToCart(id: number) {
-    setCart((current) => [...current, id]);
-  }
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -51,9 +49,9 @@ export default function ProductsPage() {
             <a href="/#services" className="hover:text-orange-400">Services</a>
             <a href="/#contact" className="hover:text-orange-400">Contact</a>
           </nav>
-          <div className="rounded-lg bg-white/10 px-4 py-2">
-            🛒 Cart: {cart.length}
-          </div>
+          <Link href="/cart/" className="rounded-lg bg-orange-500 px-4 py-2 font-bold text-white hover:bg-orange-600">
+            🛒 Cart: {itemCount}
+          </Link>
         </div>
       </header>
 
@@ -123,7 +121,7 @@ export default function ProductsPage() {
                   View Details
                 </a>
                 <button
-                  onClick={() => addToCart(product.id)}
+                  onClick={() => addToCart(product)}
                   className="mt-3 w-full rounded-lg bg-blue-800 px-4 py-3 font-bold text-white hover:bg-blue-900"
                 >
                   + Add to Cart
