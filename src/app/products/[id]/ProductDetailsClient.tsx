@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { useCart } from "@/context/CartContext";
 
 const products = [
   { id: 1, name: "Smart LED Television", category: "Electronics", price: 45000, emoji: "📺", description: "Modern smart television for your home with excellent picture quality and entertainment features.", specifications: ["Smart TV functionality", "High-quality display", "Multiple connectivity options", "Home entertainment"] },
@@ -19,6 +21,7 @@ export default function ProductDetailsClient({ id }: { id: string }) {
   const product = products.find((item) => item.id === Number(id));
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const { addToCart, itemCount } = useCart();
 
   if (!product) {
     return (
@@ -42,6 +45,7 @@ export default function ProductDetailsClient({ id }: { id: string }) {
             <a href="/#services" className="hover:text-orange-400">Services</a>
             <a href="/#contact" className="hover:text-orange-400">Contact</a>
           </nav>
+          <Link href="/cart/" className="rounded-lg bg-orange-500 px-4 py-2 font-bold text-white hover:bg-orange-600">🛒 Cart: {itemCount}</Link>
         </div>
       </header>
       <div className="mx-auto max-w-7xl px-6 py-8">
@@ -67,10 +71,10 @@ export default function ProductDetailsClient({ id }: { id: string }) {
               <span className="font-bold">{quantity}</span>
               <button onClick={() => setQuantity(quantity + 1)} className="rounded-lg border px-4 py-2">+</button>
             </div>
-            <button onClick={() => setAdded(true)} className="mt-8 w-full rounded-lg bg-blue-800 px-6 py-4 font-bold text-white hover:bg-blue-900">
+            <button onClick={() => { addToCart(product, quantity); setAdded(true); }} className="mt-8 w-full rounded-lg bg-blue-800 px-6 py-4 font-bold text-white hover:bg-blue-900">
               Add to Cart — NPR {(product.price * quantity).toLocaleString("en-IN")}
             </button>
-            {added && <p className="mt-4 rounded-lg bg-green-50 p-4 font-semibold text-green-700">✓ Product added successfully! (Demo only)</p>}
+            {added && <p className="mt-4 rounded-lg bg-green-50 p-4 font-semibold text-green-700">✓ Product added to your shopping cart!</p>}
           </div>
         </div>
       </div>
