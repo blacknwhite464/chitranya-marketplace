@@ -32,9 +32,16 @@ export default function ProductDetailsClient({ id }: { id: string }) {
   return (
     <main className="min-h-screen bg-slate-50">
       <header className="bg-slate-950 px-6 py-5 text-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
           <a href="/" className="text-2xl font-black">CHITRANYA<span className="text-orange-500">.</span></a>
-          <a href="/products/" className="font-semibold hover:text-orange-400">All Products</a>
+          <nav className="flex flex-wrap gap-5 text-sm font-semibold">
+            <a href="/" className="hover:text-orange-400">Home</a>
+            <a href="/products/" className="text-orange-400">Products</a>
+            <a href="/#electronics" className="hover:text-orange-400">Electronics</a>
+            <a href="/#hardware" className="hover:text-orange-400">Hardware</a>
+            <a href="/#services" className="hover:text-orange-400">Services</a>
+            <a href="/#contact" className="hover:text-orange-400">Contact</a>
+          </nav>
         </div>
       </header>
       <div className="mx-auto max-w-7xl px-6 py-8">
