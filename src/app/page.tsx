@@ -56,6 +56,10 @@ export default function Home() {
             <a href="#" className="hover:text-blue-700">Home</a>
             <a href="/products/" className="hover:text-blue-700">Products</a>
             <Link href="/cart/" className="relative z-50 inline-flex cursor-pointer items-center rounded-lg bg-orange-500 px-4 py-2 font-bold text-white hover:bg-orange-600">🛒 Cart ({itemCount})</Link>
+            <form action="/products/" method="GET" className="flex min-w-[220px] flex-1 max-w-md overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <input name="search" type="search" placeholder="Search products..." className="min-w-0 flex-1 px-4 py-2 text-sm text-slate-900 outline-none" />
+              <button type="submit" className="bg-blue-800 px-4 py-2 text-sm font-bold text-white hover:bg-blue-900">Search</button>
+            </form>
             <a href="#electronics" className="hover:text-blue-700">Electronics</a>
             <a href="#hardware" className="hover:text-blue-700">Hardware</a>
             <a href="#services" className="hover:text-blue-700">Services</a>
@@ -67,6 +71,15 @@ export default function Home() {
           </a>
         </div>
       </header>
+
+      <section className="border-b bg-white">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-6 py-5 text-center text-sm font-semibold text-slate-700 md:grid-cols-4">
+          <div>🛡️ Trusted Products</div>
+          <div>🚚 Delivery Across Nepal</div>
+          <div>💳 Convenient Payments</div>
+          <div>🤝 Customer Support</div>
+        </div>
+      </section>
 
       <section className="bg-gradient-to-r from-slate-950 via-blue-950 to-blue-800 text-white">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-24 md:grid-cols-2">
