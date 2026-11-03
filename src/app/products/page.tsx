@@ -169,7 +169,7 @@ export default function ProductsPage() {
                       {formatPrice(product.price)}
                     </p>
                     <Link
-                      href={"/products/" + product.id + "/"}
+                      href={"/product/?id=" + product.id}
                       className="mt-4 block w-full rounded-lg border border-blue-800 px-4 py-3 text-center font-bold text-blue-800 hover:bg-blue-50"
                     >
                       View Details
