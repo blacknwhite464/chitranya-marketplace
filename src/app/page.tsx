@@ -1,3 +1,7 @@
+"use client";
+
+
+import { useCart } from "@/context/CartContext";
 
 const electronics = [
   "Televisions & Smart TVs",
@@ -33,6 +37,8 @@ const services = [
 ];
 
 export default function Home() {
+  const { itemCount } = useCart();
+
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
       <div className="bg-slate-950 px-4 py-2 text-center text-sm text-white">
@@ -48,7 +54,7 @@ export default function Home() {
           <nav className="flex flex-wrap gap-5 text-sm font-semibold">
             <a href="#" className="hover:text-blue-700">Home</a>
             <a href="/products/" className="hover:text-blue-700">Products</a>
-            <a href="/cart/" className="hover:text-blue-700">🛒 Cart</a>
+            <a href="/cart/" className="rounded-lg bg-orange-500 px-4 py-2 font-bold text-white hover:bg-orange-600">🛒 Cart ({itemCount})</a>
             <a href="#electronics" className="hover:text-blue-700">Electronics</a>
             <a href="#hardware" className="hover:text-blue-700">Hardware</a>
             <a href="#services" className="hover:text-blue-700">Services</a>
