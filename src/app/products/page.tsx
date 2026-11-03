@@ -43,11 +43,14 @@ export default function ProductsPage() {
           <a href="/" className="text-2xl font-black text-white">
             CHITRANYA<span className="text-orange-500">.</span>
           </a>
-          <div className="flex gap-5 text-sm font-semibold">
+          <nav className="flex flex-wrap gap-5 text-sm font-semibold">
             <a href="/" className="hover:text-orange-400">Home</a>
+            <a href="/products/" className="text-orange-400">Products</a>
             <a href="/#electronics" className="hover:text-orange-400">Electronics</a>
             <a href="/#hardware" className="hover:text-orange-400">Hardware</a>
-          </div>
+            <a href="/#services" className="hover:text-orange-400">Services</a>
+            <a href="/#contact" className="hover:text-orange-400">Contact</a>
+          </nav>
           <div className="rounded-lg bg-white/10 px-4 py-2">
             🛒 Cart: {cart.length}
           </div>
