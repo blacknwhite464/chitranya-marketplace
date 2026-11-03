@@ -47,6 +47,7 @@ export default function Home() {
 
           <nav className="flex flex-wrap gap-5 text-sm font-semibold">
             <a href="#" className="hover:text-blue-700">Home</a>
+            <a href="/products/" className="hover:text-blue-700">Products</a>
             <a href="#electronics" className="hover:text-blue-700">Electronics</a>
             <a href="#hardware" className="hover:text-blue-700">Hardware</a>
             <a href="#services" className="hover:text-blue-700">Services</a>
@@ -73,7 +74,7 @@ export default function Home() {
               home services — all in one place.
             </p>
             <div className="mt-9 flex flex-wrap gap-4">
-              <a href="#electronics" className="rounded-lg bg-orange-500 px-7 py-4 font-bold text-white hover:bg-orange-600">
+              <a href="/products/" className="rounded-lg bg-orange-500 px-7 py-4 font-bold text-white hover:bg-orange-600">
                 Explore Products
               </a>
               <a href="#services" className="rounded-lg border border-white px-7 py-4 font-bold hover:bg-white hover:text-blue-950">
