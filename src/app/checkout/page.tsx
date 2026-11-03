@@ -3,6 +3,8 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { useCart } from "@/context/CartContext";
 
 const formatPrice = (price: number) => "NPR " + price.toLocaleString("en-IN");
@@ -16,11 +18,13 @@ export default function CheckoutPage() {
   const [city, setCity] = useState("");
   const [notes, setNotes] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  function placeOrder(event: FormEvent<HTMLFormElement>) {
+  async function placeOrder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting) return;
     setError("");
 
     if (items.length === 0) {
@@ -28,26 +32,50 @@ export default function CheckoutPage() {
       return;
     }
 
+    setSubmitting(true);
+    const orderId = "CHT-" + Date.now();
     const order = {
-      orderId: "CHT-" + Date.now(),
-      customerName,
-      phone,
-      address,
-      city,
-      notes,
+      orderId,
+      customerName: customerName.trim(),
+      phone: phone.trim(),
+      address: address.trim(),
+      city: city.trim(),
+      notes: notes.trim(),
       paymentMethod: "Cash on Delivery",
-      items,
+      items: items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        category: item.category,
+        price: item.price,
+        emoji: item.emoji,
+        quantity: item.quantity,
+      })),
       itemCount,
       total,
-      placedAt: new Date().toISOString(),
+      status: "Pending",
     };
 
     try {
-      localStorage.setItem("chitranya-last-order", JSON.stringify(order));
+      await addDoc(collection(db, "orders"), {
+        ...order,
+        createdAt: serverTimestamp(),
+      });
+
+      try {
+        localStorage.setItem(
+          "chitranya-last-order",
+          JSON.stringify({ ...order, placedAt: new Date().toISOString() })
+        );
+      } catch {
+        // The Firestore order is already saved; confirmation can still proceed.
+      }
+
       items.forEach((item) => removeFromCart(item.id));
       router.push("/order-confirmation/");
-    } catch {
-      setError("We could not save your order on this device. Please try again.");
+    } catch (err) {
+      console.error("Order submission failed:", err);
+      setError("We could not submit your order. Please check your internet connection and try again. If the problem continues, contact CHITRANYA.");
+      setSubmitting(false);
     }
   }
 
@@ -84,7 +112,7 @@ export default function CheckoutPage() {
           <h2 className="text-2xl font-black">Delivery Information</h2>
           <div>
             <label htmlFor="customerName" className="mb-2 block text-sm font-bold">Full Name *</label>
-            <input id="customerName" required value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Enter your full name" className="w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-700" />
+            <input id="customerName" required maxLength={100} value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Enter your full name" className="w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-700" />
           </div>
           <div>
             <label htmlFor="phone" className="mb-2 block text-sm font-bold">Phone Number *</label>
@@ -93,15 +121,15 @@ export default function CheckoutPage() {
           </div>
           <div>
             <label htmlFor="address" className="mb-2 block text-sm font-bold">Delivery Address *</label>
-            <textarea id="address" required rows={3} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="House number, street, area or landmark" className="w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-700" />
+            <textarea id="address" required maxLength={500} rows={3} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="House number, street, area or landmark" className="w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-700" />
           </div>
           <div>
             <label htmlFor="city" className="mb-2 block text-sm font-bold">City / Municipality *</label>
-            <input id="city" required value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Kathmandu" className="w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-700" />
+            <input id="city" required maxLength={100} value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Kathmandu" className="w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-700" />
           </div>
           <div>
             <label htmlFor="notes" className="mb-2 block text-sm font-bold">Order Notes (Optional)</label>
-            <textarea id="notes" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any delivery instructions?" className="w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-700" />
+            <textarea id="notes" maxLength={1000} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any delivery instructions?" className="w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-700" />
           </div>
           <div className="rounded-xl border border-green-200 bg-green-50 p-5">
             <p className="font-bold text-slate-900">Payment Method</p>
@@ -109,8 +137,10 @@ export default function CheckoutPage() {
             <p className="mt-1 text-sm text-slate-600">Pay when your order is delivered. Online payment is not enabled yet.</p>
           </div>
           {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-700">{error}</p>}
-          <button type="submit" className="w-full rounded-lg bg-orange-500 px-6 py-4 font-bold text-white hover:bg-orange-600">Place Order — {formatPrice(total)}</button>
-          <p className="text-xs text-slate-500">Demo checkout: this order is saved only in this browser. It is not yet sent to CHITRANYA.</p>
+          <button type="submit" disabled={submitting} className="w-full rounded-lg bg-orange-500 px-6 py-4 font-bold text-white hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60">
+            {submitting ? "Submitting Order..." : `Place Order — ${formatPrice(total)}`}
+          </button>
+          <p className="text-xs text-slate-500">Your order will be saved to CHITRANYA's Firestore database.</p>
         </form>
 
         <aside className="h-fit rounded-2xl border bg-white p-6 shadow-sm">
