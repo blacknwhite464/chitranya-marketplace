@@ -1,31 +1,65 @@
-
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useCart } from "@/context/CartContext";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useCart, type CartProduct } from "@/context/CartContext";
 
-const products = [
-  { id: 1, name: "Smart LED Television", category: "Electronics", price: 45000, emoji: "📺", description: "Modern smart television for your home." },
-  { id: 2, name: "Double Door Refrigerator", category: "Electronics", price: 65000, emoji: "🧊", description: "Spacious and energy-efficient refrigerator." },
-  { id: 3, name: "Automatic Washing Machine", category: "Electronics", price: 55000, emoji: "🧺", description: "Convenient automatic washing machine." },
-  { id: 4, name: "Laptop Computer", category: "Electronics", price: 85000, emoji: "💻", description: "Reliable computer for work and study." },
-  { id: 5, name: "CCTV Security Camera", category: "Electronics", price: 7500, emoji: "📹", description: "Security camera for home and business." },
-  { id: 6, name: "Electric Drill Machine", category: "Hardware", price: 8500, emoji: "🔩", description: "Powerful drill for everyday projects." },
-  { id: 7, name: "Professional Tool Kit", category: "Hardware", price: 4500, emoji: "🧰", description: "Essential tools for repairs and maintenance." },
-  { id: 8, name: "Water Tap Set", category: "Hardware", price: 2500, emoji: "🚰", description: "Quality bathroom and kitchen fittings." },
-  { id: 9, name: "LED Ceiling Light", category: "Hardware", price: 1800, emoji: "💡", description: "Energy-saving lighting for your home." },
-  { id: 10, name: "Safety Helmet", category: "Hardware", price: 1200, emoji: "⛑️", description: "Protective equipment for construction work." },
-];
+type StoreProduct = CartProduct & {
+  description: string;
+  active: boolean;
+};
 
 const formatPrice = (price: number) =>
   "NPR " + price.toLocaleString("en-IN");
 
 export default function ProductsPage() {
+  const [products, setProducts] = useState<StoreProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [addedProductId, setAddedProductId] = useState<number | null>(null);
   const { addToCart, itemCount } = useCart();
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, "products"),
+      (snapshot) => {
+        const activeProducts = snapshot.docs
+          .map((productDoc) => {
+            const data = productDoc.data();
+            const id = Number(data.id ?? productDoc.id);
+
+            if (!Number.isFinite(id)) return null;
+
+            return {
+              id,
+              name: String(data.name ?? ""),
+              category: String(data.category ?? "Other"),
+              price: Number(data.price ?? 0),
+              emoji: String(data.emoji ?? "📦"),
+              description: String(data.description ?? ""),
+              active: data.active === true,
+            };
+          })
+          .filter((product): product is StoreProduct => product !== null && product.active)
+          .sort((a, b) => a.id - b.id);
+
+        setProducts(activeProducts);
+        setLoadError("");
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Unable to load products:", error);
+        setLoadError("We couldn't load products. Please refresh the page and try again.");
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -39,7 +73,7 @@ export default function ProductsPage() {
       const matchesCategory = category === "All" || product.category === category;
       return matchesSearch && matchesCategory;
     });
-  }, [search, category]);
+  }, [products, search, category]);
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -93,64 +127,79 @@ export default function ProductsPage() {
             <option value="All">All Categories</option>
             <option value="Electronics">Electronics</option>
             <option value="Hardware">Hardware</option>
+            <option value="Services">Services</option>
           </select>
         </div>
 
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-black">Our Products</h2>
           <span className="text-sm text-slate-500">
-            {filteredProducts.length} products found
+            {loading ? "Loading products..." : filteredProducts.length + " products found"}
           </span>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {filteredProducts.map((product) => (
-            <article key={product.id} className="overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-              <div className="flex h-48 items-center justify-center bg-slate-100 text-7xl">
-                {product.emoji}
-              </div>
-
-              <div className="p-5">
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-700">
-                  {product.category}
-                </span>
-                <h3 className="mt-2 text-lg font-bold">{product.name}</h3>
-                <p className="mt-2 min-h-10 text-sm text-slate-500">
-                  {product.description}
-                </p>
-                <p className="mt-4 text-xl font-black text-blue-900">
-                  {formatPrice(product.price)}
-                </p>
-                <Link
-                  href={`/products/${product.id}/`}
-                  className="mt-4 block w-full rounded-lg border border-blue-800 px-4 py-3 text-center font-bold text-blue-800 hover:bg-blue-50"
-                >
-                  View Details
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => {
-                    addToCart(product);
-                    setAddedProductId(product.id);
-                  }}
-                  className="mt-3 w-full rounded-lg bg-blue-800 px-4 py-3 font-bold text-white hover:bg-blue-900 active:scale-[0.99]"
-                >
-                  {addedProductId === product.id ? "✓ Added to Cart" : "+ Add to Cart"}
-                </button>
-                {addedProductId === product.id && (
-                  <p role="status" aria-live="polite" className="mt-2 text-center text-sm font-semibold text-green-700">
-                    Added successfully. Your cart now has {itemCount} item{itemCount === 1 ? "" : "s"}.
-                  </p>
-                )}
-              </div>
-            </article>
-          ))}
-        </div>
-
-        {filteredProducts.length === 0 && (
-          <p className="py-16 text-center text-slate-500">
-            No products found. Try another search.
+        {loadError && (
+          <p role="alert" className="rounded-lg bg-red-50 p-4 text-red-700">
+            {loadError}
           </p>
+        )}
+
+        {loading && (
+          <p className="py-16 text-center text-slate-500">Loading products from CHITRANYA...</p>
+        )}
+
+        {!loading && !loadError && (
+          <>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {filteredProducts.map((product) => (
+                <article key={product.id} className="overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+                  <div className="flex h-48 items-center justify-center bg-slate-100 text-7xl">
+                    {product.emoji}
+                  </div>
+
+                  <div className="p-5">
+                    <span className="text-xs font-bold uppercase tracking-wider text-blue-700">
+                      {product.category}
+                    </span>
+                    <h3 className="mt-2 text-lg font-bold">{product.name}</h3>
+                    <p className="mt-2 min-h-10 text-sm text-slate-500">
+                      {product.description}
+                    </p>
+                    <p className="mt-4 text-xl font-black text-blue-900">
+                      {formatPrice(product.price)}
+                    </p>
+                    <Link
+                      href={"/products/" + product.id + "/"}
+                      className="mt-4 block w-full rounded-lg border border-blue-800 px-4 py-3 text-center font-bold text-blue-800 hover:bg-blue-50"
+                    >
+                      View Details
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        addToCart(product);
+                        setAddedProductId(product.id);
+                      }}
+                      className="mt-3 w-full rounded-lg bg-blue-800 px-4 py-3 font-bold text-white hover:bg-blue-900 active:scale-[0.99]"
+                    >
+                      {addedProductId === product.id ? "✓ Added to Cart" : "+ Add to Cart"}
+                    </button>
+                    {addedProductId === product.id && (
+                      <p role="status" aria-live="polite" className="mt-2 text-center text-sm font-semibold text-green-700">
+                        Added successfully. Your cart now has {itemCount} item{itemCount === 1 ? "" : "s"}.
+                      </p>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            {filteredProducts.length === 0 && (
+              <p className="py-16 text-center text-slate-500">
+                No active products found. Please check back soon.
+              </p>
+            )}
+          </>
         )}
       </section>
 
