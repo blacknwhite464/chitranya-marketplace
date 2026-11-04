@@ -3,7 +3,7 @@
 
 import { useState, type FormEvent } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { useCart } from "@/context/CartContext";
 
 const formatPrice = (price: number) =>
@@ -60,6 +60,7 @@ export default function CheckoutPage() {
       itemCount,
       total,
       status: "Pending",
+      ...(auth.currentUser ? { userId: auth.currentUser.uid } : {}),
     };
 
     try {
