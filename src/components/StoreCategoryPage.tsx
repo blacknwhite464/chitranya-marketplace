@@ -18,6 +18,7 @@ type StoreProduct = Omit<CartProduct, "stock"> & {
 
 const MAIN_CATEGORIES: MainCategory[] = ["Electronics", "Hardware", "Home Services"];
 const money = (value: number) => "NPR " + value.toLocaleString("en-IN");
+const categoryKey = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, "").replace(/s$/, "");
 
 function normalizeMain(value: unknown): MainCategory | null {
   const text = String(value ?? "").trim().toLowerCase();
@@ -83,6 +84,13 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
   }, []);
 
   const visibleSubcategories = useMemo(() => subcategories.filter((item) => mainCategory === "All" || item.mainCategory === mainCategory), [subcategories, mainCategory]);
+
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("category");
+    if (!requested) return;
+    const match = visibleSubcategories.find((item) => categoryKey(item.name) === categoryKey(requested));
+    if (match) setSelectedSubcategory(match.name);
+  }, [visibleSubcategories]);
   const visibleProducts = useMemo(() => products.filter((product) => {
     const matchesMain = mainCategory === "All" || product.mainCategory === mainCategory;
     const matchesSub = selectedSubcategory === "All" || product.subCategory === selectedSubcategory;
