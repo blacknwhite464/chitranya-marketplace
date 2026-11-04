@@ -53,7 +53,7 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
         const data = entry.data();
         const id = Number(data.id ?? entry.id);
         const main = normalizeMain(data.mainCategory ?? data.category);
-        if (!Number.isFinite(id) || !main) return null;
+        if (!Number.isFinite(id) || !main || data.active !== true) return null;
         return {
           id,
           name: String(data.name ?? ""),
@@ -64,7 +64,7 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
           mainCategory: main,
           subCategory: String(data.subCategory ?? ""),
         };
-      }).filter((item): item is StoreProduct => item !== null && snapshot.docs.some((d) => Number(d.data().id ?? d.id) === item.id && d.data().active === true));
+      }).filter((item): item is StoreProduct => item !== null);
       setProducts(rows.sort((a, b) => a.id - b.id));
       setLoading(false);
       setError("");
