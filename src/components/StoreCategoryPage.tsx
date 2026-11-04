@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useCart, type CartProduct } from "@/context/CartContext";\nimport { useSiteContent } from "@/lib/siteContent";
+import { useCart, type CartProduct } from "@/context/CartContext";
+import { useSiteContent } from "@/lib/siteContent";
 
 type MainCategory = "Electronics" | "Hardware" | "Home Services";
 type Subcategory = { id: string; mainCategory: MainCategory; name: string; active: boolean };
@@ -38,7 +39,8 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [addedId, setAddedId] = useState<number | null>(null);
-  const { addToCart, itemCount } = useCart();\n  const content = useSiteContent();
+  const { addToCart, itemCount } = useCart();
+  const content = useSiteContent();
 
   useEffect(() => {
     const stopProducts = onSnapshot(collection(db, "products"), (snapshot) => {
