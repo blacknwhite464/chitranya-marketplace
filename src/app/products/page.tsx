@@ -19,7 +19,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All");\n  const [subCategory, setSubCategory] = useState("All");\n  const [subcategories, setSubcategories] = useState<{ mainCategory: string; name: string }[]>([]);
+  const [category, setCategory] = useState("All");
   const [addedProductId, setAddedProductId] = useState<number | null>(null);
   const { addToCart, itemCount } = useCart();
 
@@ -73,7 +73,7 @@ export default function ProductsPage() {
       const matchesCategory = category === "All" || product.category === category;
       return matchesSearch && matchesCategory;
     });
-  }, [products, search, category, subCategory]);
+  }, [products, search, category]);
 
   return (
     <main className="min-h-screen bg-slate-50">
