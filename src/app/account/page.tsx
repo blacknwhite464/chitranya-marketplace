@@ -26,7 +26,7 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (!user) { setOrders([]); setBookings([]); return; }
-    const stopOrders = onSnapshot(query(collection(db, "orders"), where("userId", "==", user.uid)), (snap) => setOrders(snap.docs.map((d) => ({ id: d.id, ...d.data() } as HistoryItem)).sort((a, b) => (b.createdAt?.toDate?.().getTime() || 0) - (a.createdAt?.toDate?.().getTime() || 0))), (err) => { console.error(err); setError("Could not load order history. Please check Firestore security rules and indexes."); });
+    const stopOrders = onSnapshot(query(collection(db, "orders"), where("userId", "==", user.uid)), (snap) => setOrders(snap.docs.map((d) => ({ id: d.id, ...d.data() } as HistoryItem)).sort((a, b) => (b.createdAt?.toDate?.()?.getTime() || 0) - (a.createdAt?.toDate?.().getTime() || 0))), (err) => { console.error(err); setError("Could not load order history. Please check Firestore security rules and indexes."); });
     const stopBookings = onSnapshot(query(collection(db, "serviceBookings"), where("userId", "==", user.uid)), (snap) => setBookings(snap.docs.map((d) => ({ id: d.id, ...d.data() } as HistoryItem)).sort((a, b) => (b.createdAt?.toDate?.().getTime() || 0) - (a.createdAt?.toDate?.().getTime() || 0))), (err) => { console.error(err); setError("Could not load service history. Please check Firestore security rules and indexes."); });
     return () => { stopOrders(); stopBookings(); };
   }, [user]);
