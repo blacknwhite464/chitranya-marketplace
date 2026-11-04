@@ -62,6 +62,7 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     let unsubscribeProducts: (() => void) | undefined;
+    let unsubscribeCategories: (() => void) | undefined;
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (!user || user.uid !== ADMIN_UID) {
         if (user) void signOut(auth);
@@ -71,7 +72,7 @@ export default function AdminProductsPage() {
       }
 
       setChecking(false);
-      const unsubscribeCategories = onSnapshot(collection(db, "categories"), (snapshot) => {
+      unsubscribeCategories = onSnapshot(collection(db, "categories"), (snapshot) => {
         setAvailableSubcategories(snapshot.docs.map((entry) => {
           const data = entry.data();
           return { id: entry.id, mainCategory: String(data.mainCategory ?? ""), name: String(data.name ?? ""), active: data.active !== false };
@@ -112,6 +113,7 @@ export default function AdminProductsPage() {
     return () => {
       unsubscribeAuth();
       unsubscribeProducts?.();
+      unsubscribeCategories?.();
     };
   }, [router]);
 
