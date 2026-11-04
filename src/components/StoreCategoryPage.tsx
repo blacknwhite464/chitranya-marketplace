@@ -96,7 +96,7 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
     if (sortBy === "price-high") return b.price - a.price;
     if (sortBy === "name") return a.name.localeCompare(b.name);
     if (sortBy === "stock") return b.stock - a.stock;
-    return b.id - a.id;
+    return a.id - b.id;
   }), [products, mainCategory, selectedSubcategory, search, inStockOnly, sortBy]);
 
   const heading = mainCategory === "All" ? "Explore All Products" : mainCategory === "Home Services" ? "Home Services" : mainCategory;
