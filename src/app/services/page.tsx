@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";\nimport { useSiteContent } from "@/lib/siteContent";
 
 const serviceGroups = [
   { title: "Home repairs & installation", items: ["Plumbing & Water Systems", "Electrical Installation & Repair", "AC Installation & Servicing", "Appliance Repair", "Hardware Installation", "TV & Wall Mounting"] },
@@ -12,7 +12,7 @@ const serviceGroups = [
 ];
 
 export default function ServicesPage() {
-  const services = useMemo(() => serviceGroups.flatMap((group) => group.items), []);
+  const services = useMemo(() => serviceGroups.flatMap((group) => group.items), []);\n  const content = useSiteContent();
   const [form, setForm] = useState({ customerName: "", phone: "", email: "", service: "", address: "", city: "Banepa", preferredDate: "", preferredTime: "Morning (9 AMâ€“12 PM)", details: "" });
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState("");
@@ -48,7 +48,7 @@ export default function ServicesPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-      <div className="bg-slate-950 px-4 py-2 text-center text-xs font-bold tracking-wide text-white">CHITRANYA â€¢ HOME & OFFICE SERVICES</div>
+      <div className="bg-slate-950 px-4 py-2 text-center text-xs font-bold tracking-wide text-white">{content.announcement}</div>
       <header className="border-b bg-white">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-4">
           <Link href="/" className="text-2xl font-black text-blue-950">CHITRANYA<span className="text-orange-500">.</span></Link>
@@ -58,9 +58,9 @@ export default function ServicesPage() {
 
       <section className="bg-gradient-to-r from-slate-950 via-blue-950 to-blue-800 px-5 py-16 text-white">
         <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-extrabold uppercase tracking-[0.25em] text-orange-300">One place for home and business</p>
-          <h1 className="mt-3 max-w-3xl text-4xl font-black leading-tight md:text-5xl">Reliable help for repairs, installation and improvement.</h1>
-          <p className="mt-5 max-w-2xl leading-7 text-blue-100">Tell us what you need. CHITRANYA will review your request and contact you to confirm availability, scope and pricing before work begins.</p>
+          <p className="text-xs font-extrabold uppercase tracking-[0.25em] text-orange-300">{content.servicesPageEyebrow}</p>
+          <h1 className="mt-3 max-w-3xl text-4xl font-black leading-tight md:text-5xl">{content.servicesPageTitle}</h1>
+          <p className="mt-5 max-w-2xl leading-7 text-blue-100">{content.servicesPageDescription}</p>
           <a href="#book-service" className="mt-7 inline-block rounded-lg bg-orange-500 px-6 py-3 font-bold text-white hover:bg-orange-600">Request a service</a>
         </div>
       </section>
@@ -94,7 +94,7 @@ export default function ServicesPage() {
           </form>
         </div>
       </section>
-      <footer className="bg-slate-950 px-5 py-8 text-center text-sm text-slate-400">Â© {new Date().getFullYear()} CHITRANYA. Electronics | Hardware | Home Services</footer>
+      <footer className="bg-slate-950 px-5 py-8 text-center text-sm text-slate-400">Â© {new Date().getFullYear()} {content.footerText}</footer>
     </main>
   );
 }
