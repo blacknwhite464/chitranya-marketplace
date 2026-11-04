@@ -4,13 +4,13 @@ import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 
 const electronics = [
-  { name: "Televisions & Smart TVs", image: "photo-1593359677879-a4bb92f829d1", description: "Smart entertainment for every room." },
-  { name: "Refrigerators", image: "photo-1571175443880-49e1d5d85efb", description: "Freshness and storage made simple." },
-  { name: "Washing Machines", image: "photo-1626806787461-102c1bfaaea1", description: "Everyday laundry made easier." },
+  { name: "Television & Smart TV", image: "photo-1593359677879-a4bb92f829d1", description: "Smart entertainment for every room." },
+  { name: "Refrigerator", image: "photo-1571175443880-49e1d5d85efb", description: "Freshness and storage made simple." },
+  { name: "Washing Machine", image: "photo-1626806787461-102c1bfaaea1", description: "Everyday laundry made easier." },
   { name: "Kitchen Appliances", image: "photo-1556911220-bff31c812dba", description: "Practical appliances for your kitchen." },
-  { name: "Computers & Accessories", image: "photo-1498049794561-7780e7231661", description: "Technology for work, study and play." },
-  { name: "CCTV & Security", image: "photo-1558002038-1055907df827", description: "Security solutions for peace of mind." },
-  { name: "Fans, Lights & Electrical", image: "photo-1507473885765-e6ed057f782c", description: "Lighting and electrical essentials." },
+  { name: "Computer & Accessories", image: "photo-1498049794561-7780e7231661", description: "Technology for work, study and play." },
+  { name: "CCTV & Security Systems", image: "photo-1558002038-1055907df827", description: "Security solutions for peace of mind." },
+  { name: "Fans/Lights/Electrical Appliances", image: "photo-1507473885765-e6ed057f782c", description: "Lighting and electrical essentials." },
 ];
 
 const hardware = [
@@ -18,7 +18,7 @@ const hardware = [
   { name: "Power Tools", image: "photo-1504148455328-c376907d081c", description: "Get more done with the right equipment." },
   { name: "Plumbing Materials", image: "photo-1607472586893-edb57bdc0e39", description: "Pipes, fittings and water system essentials." },
   { name: "Electrical Accessories", image: "photo-1621905251189-08b45d6a269e", description: "Quality electrical fittings and supplies." },
-  { name: "Paint & Painting", image: "photo-1562259949-e8e7689d7828", description: "Finishing touches for every space." },
+  { name: "Paint & Painting Equipment", image: "photo-1562259949-e8e7689d7828", description: "Finishing touches for every space." },
   { name: "Construction Materials", image: "photo-1503387762-592deb58ef4e", description: "Materials for building and renovation." },
   { name: "Bathroom Fittings", image: "photo-1620626011761-996317b8d101", description: "Fixtures for modern bathrooms." },
   { name: "Safety Equipment", image: "photo-1504307651254-35680f356dfd", description: "Protective essentials for every project." },
@@ -134,7 +134,7 @@ export default function Home() {
           <Link href="/electronics/" className="rounded-lg border border-blue-900 px-5 py-3 text-sm font-extrabold text-blue-900 hover:bg-blue-950 hover:text-white">View all electronics</Link>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {electronics.map((item) => <CategoryCard key={item.name} item={item} href="/electronics/" />)}
+          {electronics.map((item) => <CategoryCard key={item.name} item={item} href={`/electronics/?category=${encodeURIComponent(item.name)}`} />)}
         </div>
       </section>
 
@@ -145,7 +145,7 @@ export default function Home() {
             <Link href="/hardware/" className="rounded-lg border border-orange-600 px-5 py-3 text-sm font-extrabold text-orange-700 hover:bg-orange-600 hover:text-white">View all hardware</Link>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {hardware.map((item) => <CategoryCard key={item.name} item={item} href="/hardware/" accent="orange" />)}
+            {hardware.map((item) => <CategoryCard key={item.name} item={item} href={`/hardware/?category=${encodeURIComponent(item.name)}`} accent="orange" />)}
           </div>
         </div>
       </section>
@@ -162,7 +162,7 @@ export default function Home() {
               <div className="p-6">
                 <h3 className="text-lg font-extrabold">{service.name}</h3>
                 <p className="mt-2 min-h-12 text-sm leading-6 text-slate-500">{service.description}</p>
-                <Link href="/services/" className="mt-5 inline-flex items-center font-extrabold text-blue-800 hover:text-orange-600">Enquire Now <span className="ml-2 transition-transform group-hover:translate-x-1">→</span></Link>
+                <Link href={`/services/?service=${encodeURIComponent(service.name)}`} className="mt-5 inline-flex items-center font-extrabold text-blue-800 hover:text-orange-600">Enquire Now <span className="ml-2 transition-transform group-hover:translate-x-1">→</span></Link>
               </div>
             </article>
           ))}
