@@ -60,9 +60,9 @@ export default function Home() {
               <input name="search" type="search" placeholder="Search products..." className="min-w-0 flex-1 px-4 py-2 text-sm text-slate-900 outline-none" />
               <button type="submit" className="bg-blue-800 px-4 py-2 text-sm font-bold text-white hover:bg-blue-900">Search</button>
             </form>
-            <a href="#electronics" className="hover:text-blue-700">Electronics</a>
-            <a href="#hardware" className="hover:text-blue-700">Hardware</a>
-            <a href="#services" className="hover:text-blue-700">Services</a>
+            <a href="/electronics/" className="hover:text-blue-700">Electronics</a>
+            <a href="/hardware/" className="hover:text-blue-700">Hardware</a>
+            <a href="/services/" className="hover:text-blue-700">Services</a>
             <a href="#contact" className="hover:text-blue-700">Contact</a>
           </nav>
 
