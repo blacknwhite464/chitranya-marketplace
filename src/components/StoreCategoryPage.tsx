@@ -123,16 +123,18 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
         <div className="mx-auto grid max-w-[1440px] grid-cols-2 items-center gap-4 px-4 py-4 md:grid-cols-[auto_minmax(260px,1fr)_auto] md:px-6">
           <Link href="/" className="text-2xl font-black text-blue-950">CHITRANYA<span className="text-orange-500">.</span></Link>
           <form action="/products/" method="get" className="order-3 col-span-2 flex min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 md:order-none md:col-span-1">
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search products, brands and more..." className="w-full bg-transparent px-4 py-3 text-sm outline-none" />
-            <span className="bg-orange-500 px-5 py-3 font-bold text-white">Search</span>
-          </div>
+            <input name="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search products, brands and more..." className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm outline-none" />
+            <button type="submit" className="bg-orange-500 px-5 py-3 font-bold text-white">Search</button>
+          </form>
           <div className="ml-auto flex items-center gap-2">
             <Link href="/account/" className="hidden rounded-lg border border-slate-200 px-3 py-3 text-sm font-bold text-blue-950 hover:bg-slate-50 sm:inline-flex">My Account</Link>
             <Link href="/cart/" className="rounded-lg bg-blue-950 px-4 py-3 text-sm font-bold text-white">Cart ({itemCount})</Link>
           </div>
         </div>
-        <nav className="mx-auto flex max-w-[1440px] items-center gap-7 overflow-x-auto border-t border-slate-100 px-4 py-3 text-sm font-bold text-slate-700 md:px-6">\n          <Link href="/" className="whitespace-nowrap hover:text-orange-600">Home</Link>
-          <Link href="/products/" className={mainCategory==="All"?"text-orange-600":"hover:text-orange-600"}>Shop All</Link>\n          <Link href="/electronics/" className={mainCategory==="Electronics"?"text-orange-600":"hover:text-orange-600"}>Electronics</Link>
+        <nav className="mx-auto flex max-w-[1440px] items-center gap-7 overflow-x-auto border-t border-slate-100 px-4 py-3 text-sm font-bold text-slate-700 md:px-6">
+          <Link href="/" className="whitespace-nowrap hover:text-orange-600">Home</Link>
+          <Link href="/products/" className={mainCategory==="All"?"text-orange-600":"hover:text-orange-600"}>Shop All</Link>
+          <Link href="/electronics/" className={mainCategory==="Electronics"?"text-orange-600":"hover:text-orange-600"}>Electronics</Link>
           <Link href="/hardware/" className={mainCategory==="Hardware"?"text-orange-600":"hover:text-orange-600"}>Hardware</Link>
           <Link href="/services/" className="hover:text-orange-600">Home Services</Link>
           
