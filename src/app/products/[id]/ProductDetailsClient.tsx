@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useCart } from "@/context/CartContext";
+import { useCart } from "@/context/CartContext";\nimport { useSiteContent } from "@/lib/siteContent";
 
 type StoreProduct = {
   id: number;
@@ -27,7 +27,7 @@ export default function ProductDetailsClient({ id }: { id: string }) {
   const [loadError, setLoadError] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
-  const { addToCart, itemCount } = useCart();
+  const { addToCart, itemCount } = useCart();\n  const content = useSiteContent();
 
   useEffect(() => {
     if (!id) return;
@@ -192,7 +192,7 @@ export default function ProductDetailsClient({ id }: { id: string }) {
         </div>
       </div>
       <footer className="mt-16 bg-slate-950 px-6 py-8 text-center text-slate-400">
-        © 2026 CHITRANYA. All rights reserved.
+        © {new Date().getFullYear()} {content.footerText}
       </footer>
     </main>
   );
