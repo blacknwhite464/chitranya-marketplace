@@ -1,6 +1,5 @@
-import ProductDetailsClient from "./ProductDetailsClient";
 
-export const dynamicParams = false;
+import ProductDetailsClient from "./ProductDetailsClient";
 
 export function generateStaticParams() {
   return Array.from({ length: 10 }, (_, index) => ({
@@ -14,5 +13,6 @@ export default async function ProductDetailsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
   return <ProductDetailsClient id={id} />;
 }

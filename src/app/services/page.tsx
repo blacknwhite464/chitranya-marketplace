@@ -13,7 +13,7 @@ const serviceGroups = [
 
 export default function ServicesPage() {
   const services = useMemo(() => serviceGroups.flatMap((group) => group.items), []);
-  const [form, setForm] = useState({ customerName: "", phone: "", email: "", service: "", address: "", city: "Banepa", preferredDate: "", preferredTime: "Morning (9 AM–12 PM)", details: "" });
+  const [form, setForm] = useState({ customerName: "", phone: "", email: "", service: "", address: "", city: "Banepa", preferredDate: "", preferredTime: "Morning (9 AMâ€“12 PM)", details: "" });
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -21,7 +21,7 @@ export default function ServicesPage() {
   async function submitBooking(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(""); setMessage("");
-    if (!/^\\+?[0-9\\s-]{7,15}$/.test(form.phone.trim())) { setError("Please enter a valid contact number."); return; }
+    if (!/^\+?[0-9\s-]{7,15}$/.test(form.phone.trim())) { setError("Please enter a valid contact number."); return; }
     setSending(true);
     try {
       const booking = await addDoc(collection(db, "serviceBookings"), {
@@ -31,7 +31,7 @@ export default function ServicesPage() {
         createdAt: serverTimestamp(),
       });
       setMessage("Your service request has been received. Reference: " + booking.id);
-      setForm({ customerName: "", phone: "", email: "", service: "", address: "", city: "Banepa", preferredDate: "", preferredTime: "Morning (9 AM–12 PM)", details: "" });
+      setForm({ customerName: "", phone: "", email: "", service: "", address: "", city: "Banepa", preferredDate: "", preferredTime: "Morning (9 AMâ€“12 PM)", details: "" });
     } catch (err) {
       console.error("Service booking submission failed:", err);
       setError("We could not submit your request. Please contact CHITRANYA directly or try again later.");
@@ -40,7 +40,7 @@ export default function ServicesPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-      <div className="bg-slate-950 px-4 py-2 text-center text-xs font-bold tracking-wide text-white">CHITRANYA • HOME & OFFICE SERVICES</div>
+      <div className="bg-slate-950 px-4 py-2 text-center text-xs font-bold tracking-wide text-white">CHITRANYA â€¢ HOME & OFFICE SERVICES</div>
       <header className="border-b bg-white">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-4">
           <Link href="/" className="text-2xl font-black text-blue-950">CHITRANYA<span className="text-orange-500">.</span></Link>
@@ -78,7 +78,7 @@ export default function ServicesPage() {
               <label className="text-sm font-semibold">City / area<input required maxLength={100} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="mt-1 w-full rounded-lg border bg-white px-3 py-3" /></label>
               <label className="text-sm font-semibold">Full address<input required maxLength={300} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="mt-1 w-full rounded-lg border bg-white px-3 py-3" /></label>
               <label className="text-sm font-semibold">Preferred date<input required type="date" min={new Date().toISOString().slice(0, 10)} value={form.preferredDate} onChange={(e) => setForm({ ...form, preferredDate: e.target.value })} className="mt-1 w-full rounded-lg border bg-white px-3 py-3" /></label>
-              <label className="text-sm font-semibold">Preferred time<select value={form.preferredTime} onChange={(e) => setForm({ ...form, preferredTime: e.target.value })} className="mt-1 w-full rounded-lg border bg-white px-3 py-3"><option>Morning (9 AM–12 PM)</option><option>Afternoon (12 PM–4 PM)</option><option>Evening (4 PM–7 PM)</option><option>Flexible</option></select></label>
+              <label className="text-sm font-semibold">Preferred time<select value={form.preferredTime} onChange={(e) => setForm({ ...form, preferredTime: e.target.value })} className="mt-1 w-full rounded-lg border bg-white px-3 py-3"><option>Morning (9 AMâ€“12 PM)</option><option>Afternoon (12 PMâ€“4 PM)</option><option>Evening (4 PMâ€“7 PM)</option><option>Flexible</option></select></label>
             </div>
             <label className="block text-sm font-semibold">Describe the work needed<textarea required maxLength={1500} rows={4} value={form.details} onChange={(e) => setForm({ ...form, details: e.target.value })} placeholder="Describe the problem, product or work area..." className="mt-1 w-full rounded-lg border bg-white px-3 py-3" /></label>
             <button disabled={sending} className="w-full rounded-lg bg-orange-500 px-6 py-4 font-bold text-white hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60">{sending ? "Submitting request..." : "Submit service request"}</button>
@@ -86,7 +86,7 @@ export default function ServicesPage() {
           </form>
         </div>
       </section>
-      <footer className="bg-slate-950 px-5 py-8 text-center text-sm text-slate-400">© {new Date().getFullYear()} CHITRANYA. Electronics | Hardware | Home Services</footer>
+      <footer className="bg-slate-950 px-5 py-8 text-center text-sm text-slate-400">Â© {new Date().getFullYear()} CHITRANYA. Electronics | Hardware | Home Services</footer>
     </main>
   );
 }

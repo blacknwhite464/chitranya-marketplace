@@ -175,6 +175,7 @@ export default function ProductDetailsClient({ id }: { id: string }) {
                   price: product.price,
                   emoji: "",
                   imageUrl: product.imageUrl,
+                  stock: product.stock,
                 }, quantity);
                 setAdded(true);
               }}

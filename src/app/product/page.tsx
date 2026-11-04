@@ -6,6 +6,8 @@ import ProductDetailsClient from "../products/[id]/ProductDetailsClient";
 export default function ProductPage() {
   const [productId, setProductId] = useState("");
 
+
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setProductId(params.get("id") ?? "");
