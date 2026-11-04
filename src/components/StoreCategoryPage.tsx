@@ -120,9 +120,9 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
     <main className="min-h-screen bg-slate-50 text-slate-900">
       <div className="bg-slate-950 px-4 py-2 text-center text-xs font-bold text-white">{content.announcement}</div>
       <header className="sticky top-0 z-40 border-b bg-white shadow-sm">
-        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-4 px-4 py-4">
+        <div className="mx-auto grid max-w-[1440px] grid-cols-2 items-center gap-4 px-4 py-4 md:grid-cols-[auto_minmax(260px,1fr)_auto] md:px-6">
           <Link href="/" className="text-2xl font-black text-blue-950">CHITRANYA<span className="text-orange-500">.</span></Link>
-          <div className="order-3 flex w-full overflow-hidden rounded-lg border bg-slate-50 md:order-2 md:mx-5 md:flex-1">
+          <form action="/products/" method="get" className="order-3 col-span-2 flex min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 md:order-none md:col-span-1">
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search products, brands and more..." className="w-full bg-transparent px-4 py-3 text-sm outline-none" />
             <span className="bg-orange-500 px-5 py-3 font-bold text-white">Search</span>
           </div>
@@ -131,7 +131,7 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
             <Link href="/cart/" className="rounded-lg bg-blue-950 px-4 py-3 text-sm font-bold text-white">Cart ({itemCount})</Link>
           </div>
         </div>
-        <nav className="mx-auto flex max-w-[1440px] gap-7 overflow-x-auto border-t px-4 py-3 text-sm font-bold">
+        <nav className="mx-auto flex max-w-[1440px] items-center gap-7 overflow-x-auto border-t border-slate-100 px-4 py-3 text-sm font-bold text-slate-700 md:px-6">\n          <Link href="/" className="whitespace-nowrap hover:text-orange-600">Home</Link>
           <Link href="/electronics/" className={mainCategory==="Electronics"?"text-orange-600":"hover:text-orange-600"}>Electronics</Link>
           <Link href="/hardware/" className={mainCategory==="Hardware"?"text-orange-600":"hover:text-orange-600"}>Hardware</Link>
           <Link href="/services/" className="hover:text-orange-600">Home Services</Link>
