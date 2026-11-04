@@ -22,7 +22,7 @@ export default function CartPage() {
             <Link href="/#services" className="hover:text-orange-400">Services</Link>
             <Link href="/#contact" className="hover:text-orange-400">Contact</Link>
           </nav>
-          <span className="rounded-lg bg-white/10 px-4 py-2">🛒 Cart: {itemCount}</span>
+          <span className="rounded-lg bg-white/10 px-4 py-2">Cart: {itemCount}</span>
         </div>
       </header>
 
@@ -38,14 +38,13 @@ export default function CartPage() {
         <div className="space-y-4 lg:col-span-2">
           {items.length === 0 ? (
             <div className="rounded-2xl border bg-white p-10 text-center">
-              <div className="text-6xl">🛒</div>
               <h2 className="mt-4 text-2xl font-black">Your cart is empty</h2>
               <p className="mt-2 text-slate-500">Add products to your cart to see them here.</p>
               <Link href="/products/" className="mt-6 inline-block rounded-lg bg-blue-800 px-6 py-3 font-bold text-white hover:bg-blue-900">Explore Products</Link>
             </div>
           ) : items.map((item) => (
             <article key={item.id} className="flex flex-col gap-5 rounded-2xl border bg-white p-5 sm:flex-row sm:items-center">
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-5xl">{item.emoji}</div>
+              <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white">{item.imageUrl ? <img src={item.imageUrl} alt={item.name} className="h-full w-full object-contain" /> : <span className="px-2 text-center text-[10px] font-semibold uppercase text-slate-400">No photo</span>}</div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold uppercase tracking-wider text-blue-700">{item.category}</p>
                 <h2 className="mt-1 text-lg font-bold">{item.name}</h2>
