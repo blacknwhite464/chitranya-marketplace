@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { addDoc, collection, deleteDoc, doc, getDocs, onSnapshot, query, where } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDocs, onSnapshot, query, updateDoc, where } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { auth, db } from "@/lib/firebase";
@@ -14,7 +14,7 @@ const DEFAULT_SUBCATEGORIES: Record<string, string[]> = {
   Hardware: ["Hand Tools", "Power Tools", "Plumbing Materials", "Electrical Accessories", "Paint & Painting Equipment", "Construction Materials", "Bathroom Fittings", "Door & Window Fittings", "Safety Equipment", "Nuts, Bolts & Fasteners", "Adhesives & Sealants"],
   "Home Services": ["Plumbing Services", "Electrical Repair", "AC Installation & Servicing", "Appliance Repair", "CCTV Installation", "Home Cleaning", "Painting Services", "Home Renovation", "Hardware Installation", "Bathroom Installation", "Carpenter Services", "TV & Wall Mounting"],
 };
-type CategoryItem = { id: string; mainCategory: string; name: string; active: boolean };
+type CategoryItem = { id: string; mainCategory: string; name: string; active: boolean; showOnHomepage: boolean };
 
 export default function AdminCategoriesPage() {
   const router = useRouter();
@@ -45,7 +45,7 @@ export default function AdminCategoriesPage() {
       stopCategories = onSnapshot(collection(db, "categories"), (snapshot) => {
         setItems(snapshot.docs.map((entry) => {
           const data = entry.data();
-          return { id: entry.id, mainCategory: String(data.mainCategory ?? ""), name: String(data.name ?? ""), active: data.active !== false };
+          return { id: entry.id, mainCategory: String(data.mainCategory ?? ""), name: String(data.name ?? ""), active: data.active !== false, showOnHomepage: data.showOnHomepage !== false };
         }).filter((item) => MAIN_CATEGORIES.includes(item.mainCategory as typeof MAIN_CATEGORIES[number])));
       }, (err) => {
         console.error(err);
@@ -70,7 +70,7 @@ export default function AdminCategoriesPage() {
     try {
       for (const main of MAIN_CATEGORIES) {
         for (const sub of DEFAULT_SUBCATEGORIES[main]) {
-          await addDoc(collection(db, "categories"), { mainCategory: main, name: sub, active: true });
+          await addDoc(collection(db, "categories"), { mainCategory: main, name: sub, active: true, showOnHomepage: true });
         }
       }
       setNotice("Default subcategories added successfully.");
@@ -95,13 +95,24 @@ export default function AdminCategoriesPage() {
         await updateDoc(doc(db, "categories", editingId), { mainCategory, name: cleanName });
         setNotice("Subcategory updated.");
       } else {
-        await addDoc(collection(db, "categories"), { mainCategory, name: cleanName, active: true });
+        await addDoc(collection(db, "categories"), { mainCategory, name: cleanName, active: true, showOnHomepage: false });
         setNotice("Subcategory added.");
       }
       setName(""); setEditingId(null);
     } catch (err) {
       console.error(err);
       setError("Could not save the subcategory. Check Firestore permissions and try again.");
+    } finally { setBusy(false); }
+  }
+
+  async function toggleHomepage(item: CategoryItem) {
+    setBusy(true); setError(""); setNotice("");
+    try {
+      await updateDoc(doc(db, "categories", item.id), { showOnHomepage: !item.showOnHomepage });
+      setNotice(`"${item.name}" ${item.showOnHomepage ? "removed from" : "added to"} the homepage.`);
+    } catch (err) {
+      console.error(err);
+      setError("Could not update homepage visibility. Check Firestore permissions and try again.");
     } finally { setBusy(false); }
   }
 
@@ -141,7 +152,7 @@ export default function AdminCategoriesPage() {
       <section className="mx-auto max-w-7xl px-5 py-8">
         <div className="mb-6 rounded-2xl bg-white p-5 shadow-sm">
           <h2 className="text-xl font-black">Three main categories</h2>
-          <p className="mt-1 text-sm text-slate-600">Electronics, Hardware and Home Services are fixed. You can add, rename and remove their subcategories here.</p>
+          <p className="mt-1 text-sm text-slate-600">Electronics, Hardware and Home Services are fixed. Add, rename and remove subcategories, and choose which ones appear on the homepage using “Show on homepage”.</p>
           {!items.length && <button disabled={busy} onClick={() => void seedDefaults()} className="mt-4 rounded-lg bg-blue-800 px-4 py-3 font-bold text-white disabled:opacity-50">{busy ? "Setting up..." : "Set up recommended subcategories"}</button>}
         </div>
         <form onSubmit={saveCategory} className="mb-8 grid gap-3 rounded-2xl bg-white p-5 shadow-sm md:grid-cols-[1fr_2fr_auto]">
@@ -154,7 +165,7 @@ export default function AdminCategoriesPage() {
         <div className="grid gap-5 lg:grid-cols-3">
           {grouped.map(({ main, children }) => <section key={main} className="rounded-2xl bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between"><h2 className="text-xl font-black">{main}</h2><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold">{children.length} subcategories</span></div>
-            {children.length ? <ul className="space-y-2">{children.map((item) => <li key={item.id} className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 p-3"><span className="text-sm font-medium text-slate-800">{item.name}</span><span className="flex shrink-0 gap-2"><button onClick={() => { setEditingId(item.id); setMainCategory(item.mainCategory); setName(item.name); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="text-xs font-bold text-blue-700">Edit</button><button disabled={busy} onClick={() => void removeCategory(item)} className="text-xs font-bold text-red-600 disabled:opacity-50">Delete</button></span></li>)}</ul> : <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">No subcategories yet.</p>}
+            {children.length ? <ul className="space-y-2">{children.map((item) => <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-100 p-3"><div className="min-w-0"><p className="text-sm font-medium text-slate-800">{item.name}</p><label className="mt-2 inline-flex cursor-pointer items-center gap-2 text-xs font-bold text-slate-600"><input type="checkbox" checked={item.showOnHomepage} disabled={busy} onChange={() => void toggleHomepage(item)} className="h-4 w-4 accent-orange-500" />Show on homepage</label></div><span className="flex shrink-0 gap-2"><button onClick={() => { setEditingId(item.id); setMainCategory(item.mainCategory); setName(item.name); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="text-xs font-bold text-blue-700">Edit</button><button disabled={busy} onClick={() => void removeCategory(item)} className="text-xs font-bold text-red-600 disabled:opacity-50">Delete</button></span></li>)}</ul> : <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">No subcategories yet.</p>}
           </section>)}
         </div>
       </section>
