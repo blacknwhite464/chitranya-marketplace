@@ -46,6 +46,30 @@ const services = [
   { name: "Inverter & Backup Power", description: "Inverter, battery and backup power installation support.", image: "photo-1473341304170-971013b6b815" },
 ];
 
+function categoryEmoji(value: string) {
+  const name = value.toLowerCase();
+  if (name.includes("television") || name.includes("tv")) return "📺";
+  if (name.includes("refrigerator")) return "🧊";
+  if (name.includes("washing")) return "🧺";
+  if (name.includes("kitchen")) return "🍳";
+  if (name.includes("computer") || name.includes("network") || name.includes("wi-fi")) return "💻";
+  if (name.includes("cctv") || name.includes("security")) return "📹";
+  if (name.includes("fan") || name.includes("light") || name.includes("electrical")) return "💡";
+  if (name.includes("tool")) return "🛠️";
+  if (name.includes("plumbing") || name.includes("water")) return "🚿";
+  if (name.includes("paint")) return "🎨";
+  if (name.includes("construction") || name.includes("renovation")) return "🏗️";
+  if (name.includes("bathroom")) return "🛁";
+  if (name.includes("safety")) return "🦺";
+  if (name.includes("clean")) return "🧹";
+  if (name.includes("ac")) return "❄️";
+  if (name.includes("appliance")) return "🔧";
+  if (name.includes("carpentry") || name.includes("furniture")) return "🪚";
+  if (name.includes("office")) return "🏢";
+  if (name.includes("inverter") || name.includes("power")) return "🔋";
+  return "✨";
+}
+
 function photoUrl(id: string, width = 900) {
   return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${width}&q=82`;
 }
@@ -59,7 +83,7 @@ function CategoryCard({ item, href, accent = "blue" }: { item: { name: string; i
         <span className="absolute bottom-3 left-4 rounded-full bg-white/95 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide text-slate-800">Explore category</span>
       </div>
       <div className="p-5">
-        <h3 className="font-extrabold text-slate-900">{item.name}</h3>
+        <h3 className="font-extrabold text-slate-900"><span className="mr-2 text-xl" aria-hidden="true">{categoryEmoji(item.name)}</span>{item.name}</h3>
         <p className="mt-2 min-h-10 text-sm leading-6 text-slate-500">{item.description}</p>
         <span className={accent === "orange" ? "mt-4 inline-flex text-sm font-extrabold text-orange-600" : "mt-4 inline-flex text-sm font-extrabold text-blue-800"}>Explore collection <span className="ml-2 transition-transform group-hover:translate-x-1">→</span></span>
       </div>
@@ -138,10 +162,10 @@ export default function Home() {
 
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-5 py-4 text-center text-xs font-bold text-slate-600 sm:grid-cols-4 sm:text-sm">
-          <div className="rounded-lg bg-slate-50 px-3 py-3">Trusted products</div>
-          <div className="rounded-lg bg-slate-50 px-3 py-3">Delivery across Nepal</div>
-          <div className="rounded-lg bg-slate-50 px-3 py-3">Convenient ordering</div>
-          <div className="rounded-lg bg-slate-50 px-3 py-3">Customer support</div>
+          <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-4 transition hover:-translate-y-1 hover:shadow-md"><span className="mr-2 text-lg">⭐</span>Trusted products</div>
+          <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-4 transition hover:-translate-y-1 hover:shadow-md"><span className="mr-2 text-lg">🚚</span>Delivery across Nepal</div>
+          <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-4 transition hover:-translate-y-1 hover:shadow-md"><span className="mr-2 text-lg">🛒</span>Convenient ordering</div>
+          <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-4 transition hover:-translate-y-1 hover:shadow-md"><span className="mr-2 text-lg">🤝</span>Customer support</div>
         </div>
       </section>
 
@@ -152,26 +176,26 @@ export default function Home() {
         </div>
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-24 md:grid-cols-[1.1fr_0.9fr] md:py-28">
           <div>
-            <p className="mb-4 text-xs font-extrabold uppercase tracking-[0.25em] text-orange-300">{content.homeEyebrow}</p>
+            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-300/30 bg-orange-400/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.2em] text-orange-200">🏠 {content.homeEyebrow}</p>
             <h1 className="max-w-2xl text-5xl font-black leading-tight md:text-6xl">{content.homeTitle}</h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-slate-200">{content.homeDescription}</p>
             <div className="mt-9 flex flex-wrap gap-4">
-              <Link href="/products/" className="rounded-lg bg-orange-500 px-7 py-4 font-extrabold text-white shadow-lg hover:bg-orange-600">Explore Products</Link>
-              <Link href="/services/" className="rounded-lg border border-white/70 bg-white/10 px-7 py-4 font-extrabold text-white hover:bg-white hover:text-blue-950">Book a Service</Link>
+              <Link href="/products/" className="rounded-lg bg-orange-500 px-7 py-4 font-extrabold text-white shadow-lg hover:bg-orange-600">🛍️ Explore Products</Link>
+              <Link href="/services/" className="rounded-lg border border-white/70 bg-white/10 px-7 py-4 font-extrabold text-white hover:bg-white hover:text-blue-950">🧰 Book a Service</Link>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Link href="/electronics/" className="group overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-2 backdrop-blur transition hover:bg-white/20">
               <img src={photoUrl("photo-1498049794561-7780e7231661", 600)} alt="Electronics and computers" className="h-36 w-full rounded-xl object-cover transition group-hover:scale-[1.02] sm:h-44" />
-              <p className="px-2 py-3 font-extrabold">Shop Electronics →</p>
+              <p className="px-2 py-3 font-extrabold">📺 Shop Electronics →</p>
             </Link>
             <Link href="/hardware/" className="group mt-8 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-2 backdrop-blur transition hover:bg-white/20">
               <img src={photoUrl("photo-1504148455328-c376907d081c", 600)} alt="Tools and hardware" className="h-36 w-full rounded-xl object-cover transition group-hover:scale-[1.02] sm:h-44" />
-              <p className="px-2 py-3 font-extrabold">Shop Hardware →</p>
+              <p className="px-2 py-3 font-extrabold">🛠️ Shop Hardware →</p>
             </Link>
             <div className="col-span-2 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-2 backdrop-blur">
               <img src={photoUrl("photo-1581578731548-c64695cc6952", 900)} alt="Professional home service" className="h-28 w-full rounded-xl object-cover sm:h-36" />
-              <p className="px-2 py-3 font-extrabold">Professional Home Services</p>
+              <p className="px-2 py-3 font-extrabold">🏡 Professional Home Services</p>
             </div>
           </div>
         </div>
@@ -200,7 +224,7 @@ export default function Home() {
                   ) : (
                     <Link href={"/product/?id=" + product.id} className="text-sm font-extrabold tracking-widest text-slate-400">CHITRANYA</Link>
                   )}
-                  <span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-[10px] font-extrabold uppercase text-blue-900 shadow">{product.category}</span>
+                  <span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-[10px] font-extrabold uppercase text-blue-900 shadow">{categoryEmoji(product.subCategory || product.category)} {product.category}</span>
                   <span className={product.stock > 0 ? "absolute right-3 top-3 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700" : "absolute right-3 top-3 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-600"}>{product.stock > 0 ? "In stock" : "Out of stock"}</span>
                 </div>
                 <div className="flex flex-1 flex-col p-5">
@@ -208,8 +232,8 @@ export default function Home() {
                   <h3 className="mt-2 min-h-12 line-clamp-2 font-extrabold text-slate-900"><Link href={"/product/?id=" + product.id} className="transition hover:text-orange-600">{product.name}</Link></h3>
                   <p className="mt-2 min-h-10 line-clamp-2 text-sm leading-5 text-slate-500">{product.description}</p>
                   <p className="mt-4 text-2xl font-black text-blue-950">NPR {product.price.toLocaleString("en-IN")}</p>
-                  <Link href={"/product/?id=" + product.id} className="mt-4 block rounded-xl border border-slate-200 px-4 py-3 text-center text-sm font-bold text-blue-950 hover:bg-blue-50">View Product Details</Link>{product.subCategory && <Link href={"/" + (product.category.toLowerCase() === "hardware" ? "hardware" : "electronics") + "/?category=" + encodeURIComponent(product.subCategory)} className="mt-2 text-center text-xs font-bold text-slate-500 hover:text-orange-600">More in {product.subCategory}</Link>}
-                  <button onClick={() => { addToCart(product); setAddedProductId(product.id); }} disabled={product.stock <= 0} className="mt-2 w-full rounded-xl bg-orange-500 px-4 py-3 text-sm font-extrabold text-white transition hover:bg-orange-600 disabled:bg-slate-300">{addedProductId === product.id ? "Added to Cart" : product.stock > 0 ? "Add to Cart" : "Out of Stock"}</button>
+                  <Link href={"/product/?id=" + product.id} className="mt-4 block rounded-xl border border-slate-200 px-4 py-3 text-center text-sm font-bold text-blue-950 hover:bg-blue-50">🔍 View Product Details</Link>{product.subCategory && <Link href={"/" + (product.category.toLowerCase() === "hardware" ? "hardware" : "electronics") + "/?category=" + encodeURIComponent(product.subCategory)} className="mt-2 text-center text-xs font-bold text-slate-500 hover:text-orange-600">More in {product.subCategory}</Link>}
+                  <button onClick={() => { addToCart(product); setAddedProductId(product.id); }} disabled={product.stock <= 0} className="mt-2 w-full rounded-xl bg-orange-500 px-4 py-3 text-sm font-extrabold text-white transition hover:bg-orange-600 disabled:bg-slate-300">{addedProductId === product.id ? "✓ Added to Cart" : product.stock > 0 ? "🛒 Add to Cart" : "Out of Stock"}</button>
                 </div>
               </article>
             ))}
@@ -219,7 +243,7 @@ export default function Home() {
 
       <section id="electronics" className="mx-auto max-w-7xl px-5 py-20">
         <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
-          <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-700">Shop products</p><h2 className="mt-2 text-3xl font-black md:text-4xl">{content.electronicsTitle}</h2><p className="mt-3 text-slate-500">{content.electronicsDescription}</p></div>
+          <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-700">⚡ Shop products</p><h2 className="mt-2 text-3xl font-black md:text-4xl">{content.electronicsTitle}</h2><p className="mt-3 text-slate-500">{content.electronicsDescription}</p></div>
           <Link href="/electronics/" className="rounded-lg border border-blue-900 px-5 py-3 text-sm font-extrabold text-blue-900 hover:bg-blue-950 hover:text-white">View all electronics</Link>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -230,7 +254,7 @@ export default function Home() {
       <section id="hardware" className="bg-white py-20">
         <div className="mx-auto max-w-7xl px-5">
           <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
-            <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-600">Build with confidence</p><h2 className="mt-2 text-3xl font-black md:text-4xl">{content.hardwareTitle}</h2><p className="mt-3 text-slate-500">{content.hardwareDescription}</p></div>
+            <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-600">🧰 Build with confidence</p><h2 className="mt-2 text-3xl font-black md:text-4xl">{content.hardwareTitle}</h2><p className="mt-3 text-slate-500">{content.hardwareDescription}</p></div>
             <Link href="/hardware/" className="rounded-lg border border-orange-600 px-5 py-3 text-sm font-extrabold text-orange-700 hover:bg-orange-600 hover:text-white">View all hardware</Link>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -241,7 +265,7 @@ export default function Home() {
 
       <section id="services" className="mx-auto max-w-7xl px-5 py-20">
         <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
-          <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-700">We are here to help</p><h2 className="mt-2 text-3xl font-black md:text-4xl">{content.servicesTitle}</h2><p className="mt-3 max-w-2xl text-slate-500">{content.servicesDescription}</p></div>
+          <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-700">🏡 We are here to help</p><h2 className="mt-2 text-3xl font-black md:text-4xl">{content.servicesTitle}</h2><p className="mt-3 max-w-2xl text-slate-500">{content.servicesDescription}</p></div>
           <Link href="/services/" className="rounded-lg bg-blue-950 px-5 py-3 text-sm font-extrabold text-white hover:bg-blue-800">Explore all services</Link>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -249,7 +273,7 @@ export default function Home() {
             <article key={service.name} className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
               <div className="h-48 overflow-hidden bg-slate-100"><img src={photoUrl(service.image)} alt={service.name} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /></div>
               <div className="p-6">
-                <h3 className="text-lg font-extrabold">{service.name}</h3>
+                <h3 className="text-lg font-extrabold"><span className="mr-2" aria-hidden="true">{categoryEmoji(service.name)}</span>{service.name}</h3>
                 <p className="mt-2 min-h-12 text-sm leading-6 text-slate-500">{service.description}</p>
                 <Link href={`/services/?service=${encodeURIComponent(service.name)}`} className="mt-5 inline-flex items-center font-extrabold text-blue-800 hover:text-orange-600">Enquire Now <span className="ml-2 transition-transform group-hover:translate-x-1">→</span></Link>
               </div>
@@ -259,10 +283,10 @@ export default function Home() {
       </section>
 
       <section id="contact" className="bg-blue-950 px-6 py-16 text-center text-white">
-        <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-300">CHITRANYA support</p>
+        <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-300">💬 CHITRANYA support</p>
         <h2 className="mt-3 text-3xl font-black">Need Something for Your Home?</h2>
         <p className="mt-4 text-slate-300">Contact CHITRANYA for products and professional services.</p>
-        <a href={content.contactEmail ? "mailto:" + content.contactEmail : "mailto:info@chitranya.com"} className="mt-7 inline-block rounded-lg bg-orange-500 px-8 py-4 font-extrabold hover:bg-orange-600">Contact CHITRANYA</a>
+        <a href={content.contactEmail ? "mailto:" + content.contactEmail : "mailto:info@chitranya.com"} className="mt-7 inline-block rounded-lg bg-orange-500 px-8 py-4 font-extrabold hover:bg-orange-600">✉️ Contact CHITRANYA</a>
       </section>
 
       <footer className="bg-slate-950 px-6 py-8 text-center text-sm text-slate-400">
