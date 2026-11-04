@@ -262,7 +262,7 @@ export default function Home() {
         <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-300">CHITRANYA support</p>
         <h2 className="mt-3 text-3xl font-black">Need Something for Your Home?</h2>
         <p className="mt-4 text-slate-300">Contact CHITRANYA for products and professional services.</p>
-        <a href="mailto:info@chitranya.com" className="mt-7 inline-block rounded-lg bg-orange-500 px-8 py-4 font-extrabold hover:bg-orange-600">Contact CHITRANYA</a>
+        <a href={content.contactEmail ? "mailto:" + content.contactEmail : "mailto:info@chitranya.com"} className="mt-7 inline-block rounded-lg bg-orange-500 px-8 py-4 font-extrabold hover:bg-orange-600">Contact CHITRANYA</a>
       </section>
 
       <footer className="bg-slate-950 px-6 py-8 text-center text-sm text-slate-400">
