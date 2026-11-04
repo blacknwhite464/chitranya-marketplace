@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useCart, type CartProduct } from "@/context/CartContext";
+import { useCart, type CartProduct } from "@/context/CartContext";\nimport { useSiteContent } from "@/lib/siteContent";
 
 const electronics = [
   { name: "Television & Smart TV", image: "photo-1593359677879-a4bb92f829d1", description: "Smart entertainment for every room." },
@@ -73,7 +73,7 @@ type HomeProduct = CartProduct & {
 };
 
 export default function Home() {
-  const { itemCount, addToCart } = useCart();
+  const { itemCount, addToCart } = useCart();\n  const content = useSiteContent();
   const [liveProducts, setLiveProducts] = useState<HomeProduct[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [addedProductId, setAddedProductId] = useState<number | null>(null);
@@ -109,7 +109,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
       <div className="bg-slate-950 px-4 py-2 text-center text-xs font-semibold tracking-wide text-white">
-        CHITRANYA — ELECTRONICS, HARDWARE & HOME SERVICES
+        {content.announcement}
       </div>
 
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
@@ -150,9 +150,9 @@ export default function Home() {
         </div>
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-24 md:grid-cols-[1.1fr_0.9fr] md:py-28">
           <div>
-            <p className="mb-4 text-xs font-extrabold uppercase tracking-[0.25em] text-orange-300">Your complete home solution</p>
-            <h1 className="max-w-2xl text-5xl font-black leading-tight md:text-6xl">Everything Your Home Needs. All in One Place.</h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-slate-200">Shop quality electronics and hardware, or book dependable help for repairs, installation and home improvement.</p>
+            <p className="mb-4 text-xs font-extrabold uppercase tracking-[0.25em] text-orange-300">{content.homeEyebrow}</p>
+            <h1 className="max-w-2xl text-5xl font-black leading-tight md:text-6xl">{content.homeTitle}</h1>
+            <p className="mt-6 max-w-xl text-lg leading-8 text-slate-200">{content.homeDescription}</p>
             <div className="mt-9 flex flex-wrap gap-4">
               <Link href="/products/" className="rounded-lg bg-orange-500 px-7 py-4 font-extrabold text-white shadow-lg hover:bg-orange-600">Explore Products</Link>
               <Link href="/services/" className="rounded-lg border border-white/70 bg-white/10 px-7 py-4 font-extrabold text-white hover:bg-white hover:text-blue-950">Book a Service</Link>
@@ -178,9 +178,9 @@ export default function Home() {
       <section id="featured-products" className="mx-auto max-w-7xl px-5 py-16">
         <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-600">Available now at CHITRANYA</p>
-            <h2 className="mt-2 text-3xl font-black md:text-4xl">Featured Products</h2>
-            <p className="mt-3 text-slate-500">Live products from our store. Updated automatically from our catalogue.</p>
+            <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-600">{content.featuredEyebrow}</p>
+            <h2 className="mt-2 text-3xl font-black md:text-4xl">{content.featuredTitle}</h2>
+            <p className="mt-3 text-slate-500">{content.featuredDescription}</p>
           </div>
           <Link href="/products/" className="rounded-lg bg-blue-950 px-5 py-3 text-sm font-extrabold text-white hover:bg-blue-800">View all products</Link>
         </div>
@@ -217,7 +217,7 @@ export default function Home() {
 
       <section id="electronics" className="mx-auto max-w-7xl px-5 py-20">
         <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
-          <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-700">Shop products</p><h2 className="mt-2 text-3xl font-black md:text-4xl">Electronics</h2><p className="mt-3 text-slate-500">Technology and appliances for modern living.</p></div>
+          <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-700">Shop products</p><h2 className="mt-2 text-3xl font-black md:text-4xl">{content.electronicsTitle}</h2><p className="mt-3 text-slate-500">{content.electronicsDescription}</p></div>
           <Link href="/electronics/" className="rounded-lg border border-blue-900 px-5 py-3 text-sm font-extrabold text-blue-900 hover:bg-blue-950 hover:text-white">View all electronics</Link>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -228,7 +228,7 @@ export default function Home() {
       <section id="hardware" className="bg-white py-20">
         <div className="mx-auto max-w-7xl px-5">
           <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
-            <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-600">Build with confidence</p><h2 className="mt-2 text-3xl font-black md:text-4xl">Hardware & Construction</h2><p className="mt-3 text-slate-500">Essential tools and materials for every project.</p></div>
+            <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-600">Build with confidence</p><h2 className="mt-2 text-3xl font-black md:text-4xl">{content.hardwareTitle}</h2><p className="mt-3 text-slate-500">{content.hardwareDescription}</p></div>
             <Link href="/hardware/" className="rounded-lg border border-orange-600 px-5 py-3 text-sm font-extrabold text-orange-700 hover:bg-orange-600 hover:text-white">View all hardware</Link>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
