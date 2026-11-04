@@ -45,7 +45,7 @@ const money = (value: number) => "NPR " + value.toLocaleString("en-IN");
 export default function AdminProductsPage() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);\n  const [subcategories, setSubcategories] = useState<{ id: string; mainCategory: string; name: string }[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [editingDocId, setEditingDocId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -57,7 +57,7 @@ export default function AdminProductsPage() {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (!user || user.uid !== ADMIN_UID) {
         if (user) void signOut(auth);
-        router.replace("/admin/login/index.html");
+        router.replace("/admin/login/");
         setChecking(false);
         return;
       }
@@ -190,7 +190,7 @@ export default function AdminProductsPage() {
             <h1 className="text-2xl font-black">Product Management</h1>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/admin/index.html" className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold hover:bg-slate-800">Orders Dashboard</Link>
+            <Link href="/admin/" className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold hover:bg-slate-800">Orders Dashboard</Link>
             <button onClick={async () => { await signOut(auth); router.replace("/admin/login/index.html"); }} className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold hover:bg-slate-800">Sign out</button>
           </div>
         </div>
@@ -267,7 +267,7 @@ export default function AdminProductsPage() {
                     <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-3xl">{product.emoji}</span>
                     <div className="min-w-0">
                       <h3 className="truncate font-bold text-slate-900">{product.name}</h3>
-                      <p className="text-sm text-slate-500">{product.category} · {money(product.price)} · Stock: {product.stock}</p>
+                      <p className="text-sm text-slate-500">{product.mainCategory || product.category}{product.subCategory ? " / " + product.subCategory : ""} · {money(product.price)} · Stock: {product.stock}</p>
                       <p className={product.active ? "text-xs font-semibold text-green-700" : "text-xs font-semibold text-slate-500"}>{product.active ? "Visible in store" : "Hidden from store"}</p>
                     </div>
                   </div>
