@@ -101,21 +101,26 @@ export default function ProductDetailsClient({ id }: { id: string }) {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <header className="sticky top-0 z-50 bg-slate-950 px-6 py-5 text-white">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
-          <a href="/" className="text-2xl font-black">CHITRANYA<span className="text-orange-500">.</span></a>
-          <nav className="flex flex-wrap gap-5 text-sm font-semibold">
-            <a href="/" className="hover:text-orange-400">Home</a>
-            <a href="/products/" className="text-orange-400">Products</a>
-            <a href="/#electronics" className="hover:text-orange-400">Electronics</a>
-            <a href="/#hardware" className="hover:text-orange-400">Hardware</a>
-            <a href="/#services" className="hover:text-orange-400">Services</a>
-            <a href="/#contact" className="hover:text-orange-400">Contact</a>
-          </nav>
-          <Link href="/cart/" className="rounded-lg bg-orange-500 px-4 py-2 font-bold text-white hover:bg-orange-600">
-            Cart: {itemCount}
-          </Link>
+      <div className="bg-slate-950 px-4 py-2 text-center text-xs font-semibold tracking-wide text-white">{content.announcement}</div>
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
+        <div className="mx-auto grid max-w-[1440px] grid-cols-2 items-center gap-4 px-4 py-4 md:grid-cols-[auto_minmax(260px,1fr)_auto] md:px-6">
+          <Link href="/" className="text-2xl font-black tracking-tight text-blue-950">CHITRANYA<span className="text-orange-500">.</span></Link>
+          <form action="/products/" method="get" className="order-3 col-span-2 flex min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 md:order-none md:col-span-1">
+            <input name="search" type="search" placeholder="Search electronics, tools, appliances..." className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm outline-none" />
+            <button type="submit" className="bg-orange-500 px-5 text-sm font-extrabold text-white">Search</button>
+          </form>
+          <div className="flex items-center justify-end gap-2">
+            <Link href="/account/" className="hidden rounded-xl border border-slate-200 px-3 py-3 text-sm font-bold text-blue-950 sm:inline-flex">My Account</Link>
+            <Link href="/cart/" className="rounded-xl bg-blue-950 px-4 py-3 text-sm font-extrabold text-white">Cart ({itemCount})</Link>
+          </div>
         </div>
+        <nav className="mx-auto flex max-w-[1440px] items-center gap-7 overflow-x-auto border-t border-slate-100 px-4 py-3 text-sm font-bold text-slate-700 md:px-6">
+          <Link href="/" className="whitespace-nowrap hover:text-orange-600">Home</Link>
+          <Link href="/products/" className="whitespace-nowrap text-orange-600">Shop All</Link>
+          <Link href="/electronics/" className="whitespace-nowrap hover:text-orange-600">Electronics</Link>
+          <Link href="/hardware/" className="whitespace-nowrap hover:text-orange-600">Hardware & Tools</Link>
+          <Link href="/services/" className="whitespace-nowrap hover:text-orange-600">Home Services</Link>
+        </nav>
       </header>
 
       <div className="mx-auto max-w-7xl px-6 py-8">
