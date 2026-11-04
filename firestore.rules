@@ -100,7 +100,7 @@ service cloud.firestore {
 
       allow read: if isAdmin() || belongsToSignedInCustomer(resource.data);
       allow update: if isAdmin();
-      allow delete: if false;
+      allow delete: if isAdmin();
     }
 
     match /serviceBookings/{bookingId} {
