@@ -132,10 +132,10 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
           </div>
         </div>
         <nav className="mx-auto flex max-w-[1440px] items-center gap-7 overflow-x-auto border-t border-slate-100 px-4 py-3 text-sm font-bold text-slate-700 md:px-6">\n          <Link href="/" className="whitespace-nowrap hover:text-orange-600">Home</Link>
-          <Link href="/electronics/" className={mainCategory==="Electronics"?"text-orange-600":"hover:text-orange-600"}>Electronics</Link>
+          <Link href="/products/" className={mainCategory==="All"?"text-orange-600":"hover:text-orange-600"}>Shop All</Link>\n          <Link href="/electronics/" className={mainCategory==="Electronics"?"text-orange-600":"hover:text-orange-600"}>Electronics</Link>
           <Link href="/hardware/" className={mainCategory==="Hardware"?"text-orange-600":"hover:text-orange-600"}>Hardware</Link>
           <Link href="/services/" className="hover:text-orange-600">Home Services</Link>
-          <Link href="/products/" className="hover:text-orange-600">Shop All</Link>
+          
         </nav>
       </header>
       <section className="relative isolate overflow-hidden bg-[#071a3a] px-5 py-14 text-white md:py-16">
