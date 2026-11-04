@@ -33,7 +33,8 @@ export default function ManagementScreen(){
  },[]);
  const subcats=useMemo(()=>categories.filter(c=>c.mainCategory===form.category&&c.active),[categories,form.category]);
  function editProduct(p:Product){setEditing(p.docId);setForm({name:p.name||'',category:p.mainCategory||p.category||'Electronics',subCategory:p.subCategory||'',price:String(p.price??''),stock:String(p.stock??0),description:p.description||'',imageUrl:p.imageUrl||'',specifications:(p.specifications||[]).join('\n'),active:p.active!==false});}
- function resetProduct(){setEditing('');setForm(blank)}
+ function resetProduct(){setEditing('');setSelectedImage(null);setForm(blank)}
+ async function chooseProductPhoto(){try{const permission=await ImagePicker.requestMediaLibraryPermissionsAsync();if(!permission.granted){Alert.alert('Photo permission needed','Allow photo library access to select a product picture.');return}const result=await ImagePicker.launchImageLibraryAsync({mediaTypes:ImagePicker.MediaTypeOptions.Images,allowsEditing:true,aspect:[1,1],quality:0.82});if(!result.canceled&&result.assets[0]){const asset=result.assets[0];setSelectedImage({uri:asset.uri,name:asset.fileName||'product-photo.jpg',type:asset.mimeType||'image/jpeg'});setForm(old=>({...old,imageUrl:''}))}}catch{setError('Could not open your photo library.')}}
  async function saveProduct(){
   if(!form.name.trim()||!form.price||Number(form.price)<=0){setError('Enter a product name and a valid price.');return}
   setBusy(true);setError('');
@@ -41,7 +42,6 @@ export default function ManagementScreen(){
    const data={name:form.name.trim(),category:form.category,mainCategory:form.category,subCategory:form.subCategory,price:Number(form.price),stock:Math.max(0,Number(form.stock)||0),description:form.description.trim(),imageUrl,specifications:form.specifications.split('\\n').map(x=>x.trim()).filter(Boolean),active:form.active,emoji:'',...(editing?{}:{id:Date.now()})};
    if(editing)await updateDoc(doc(db,'products',editing),data);else await addDoc(collection(db,'products'),data);resetProduct()}
    catch(err){setError(err instanceof Error?err.message:'Could not save product. Check Firestore rules and try again.')}
-  catch{setError('Could not save product. Check Firestore rules and try again.')}
   finally{setBusy(false)}
  }
  async function removeProduct(p:Product){Alert.alert('Delete product',`Delete ${p.name}?`,[{text:'Cancel',style:'cancel'},{text:'Delete',style:'destructive',onPress:()=>{void deleteDoc(doc(db,'products',p.docId)).catch(()=>setError('Could not delete product.'))}}])}
