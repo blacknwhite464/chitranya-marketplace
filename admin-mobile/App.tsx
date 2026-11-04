@@ -19,6 +19,7 @@ import {
 } from 'firebase/auth';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { auth, db, ADMIN_UID } from './src/firebase';
+import OrdersScreen from './src/OrdersScreen';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -29,6 +30,7 @@ export default function App() {
   const [error, setError] = useState('');
   const [metrics, setMetrics] = useState({ orders: 0, pendingOrders: 0, orderValue: 0, products: 0, lowStock: 0, bookings: 0, pendingBookings: 0 });
   const [dataError, setDataError] = useState('');
+  const [activeTab, setActiveTab] = useState<'Dashboard' | 'Orders'>('Dashboard');
 
   useEffect(() => {
     return onAuthStateChanged(auth, async (nextUser) => {
@@ -143,7 +145,14 @@ export default function App() {
     return (
       <SafeAreaView style={styles.screen}>
         <View style={styles.topLine} />
-        <ScrollView contentContainerStyle={styles.dashboardContent}>
+        <View style={styles.dashboardHeader}>
+          <View><Text style={styles.dashboardBrand}>CHITRANYA</Text><Text style={styles.dashboardSubtitle}>ADMINISTRATION</Text></View>
+          <TouchableOpacity style={styles.signOutButton} onPress={handleLogout} disabled={busy}>{busy ? <ActivityIndicator color="#102A43" /> : <Text style={styles.signOutText}>Sign out</Text>}</TouchableOpacity>
+        </View>
+        <View style={styles.tabBar}>
+          {(['Dashboard', 'Orders'] as const).map((tab) => <TouchableOpacity key={tab} onPress={() => setActiveTab(tab)} style={[styles.tabButton, activeTab === tab && styles.activeTabButton]}><Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text></TouchableOpacity>)}
+        </View>
+        {activeTab === 'Orders' ? <OrdersScreen /> : <ScrollView contentContainerStyle={styles.dashboardContent}>
           <View style={styles.dashboardHeader}>
             <View>
               <Text style={styles.dashboardBrand}>CHITRANYA</Text>
@@ -190,7 +199,7 @@ export default function App() {
           </View>
           <Text style={styles.accountLabel}>SIGNED IN AS</Text>
           <Text style={styles.accountEmail}>{user.email}</Text>
-        </ScrollView>
+        </ScrollView>}
         <Text style={styles.footer}>CHITRANYA · SHOP · SERVICES · SOLUTIONS</Text>
       </SafeAreaView>
     );
@@ -291,7 +300,15 @@ const styles = StyleSheet.create({
   loadingScreen: { flex: 1, backgroundColor: '#F4F6FA', alignItems: 'center', justifyContent: 'center' },
   loadingText: { color: '#667085', fontSize: 13, marginTop: 14 },
 
-  dashboardContent: { paddingHorizontal: 20, paddingTop: 28, paddingBottom: 28 },
+  dashboardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 20, paddingBottom: 12 },
+  dashboardBrand: { color: '#102A43', fontSize: 20, fontWeight: '900', letterSpacing: 1.8 },
+  dashboardSubtitle: { color: '#F28C28', fontSize: 9, fontWeight: '800', letterSpacing: 2.4, marginTop: 4 },
+  signOutButton: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D9E0E8', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10 },
+  signOutText: { color: '#102A43', fontSize: 12, fontWeight: '800' },
+  tabBar: { flexDirection: 'row', backgroundColor: '#FFFFFF', marginHorizontal: 20, borderRadius: 12, padding: 4, marginBottom: 8 },
+  tabButton: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 9 },
+  activeTabButton: { backgroundColor: '#102A43' }, tabText: { color: '#667085', fontSize: 13, fontWeight: '800' }, activeTabText: { color: '#FFFFFF' },
+  dashboardContent: { paddingHorizontal: 20, paddingTop: 18, paddingBottom: 28 },
   dashboardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 34 },
   dashboardBrand: { color: '#102A43', fontSize: 20, fontWeight: '900', letterSpacing: 1.8 },
   dashboardSubtitle: { color: '#F28C28', fontSize: 9, fontWeight: '800', letterSpacing: 2.4, marginTop: 4 },
