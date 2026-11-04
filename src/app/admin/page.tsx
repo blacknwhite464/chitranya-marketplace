@@ -106,7 +106,7 @@ export default function AdminDashboardPage() {
       <header className="bg-slate-950 px-5 py-5 text-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <div><p className="text-sm font-bold tracking-[0.2em] text-orange-400">CHITRANYA</p><h1 className="text-2xl font-black">Admin Dashboard</h1></div>
-          <div className="flex flex-wrap gap-2"><a href="/admin/products/" className="rounded-lg border border-slate-600 px-3 py-2 text-sm font-semibold hover:bg-slate-800">Products</a><a href="/admin/categories/" className="rounded-lg border border-orange-500 px-3 py-2 text-sm font-semibold text-orange-300 hover:bg-slate-800">Categories</a><button onClick={logout} className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold hover:bg-slate-800">Sign out</button></div>
+          <div className="flex flex-wrap gap-2"><a href="/admin/products/" className="rounded-lg border border-slate-600 px-3 py-2 text-sm font-semibold hover:bg-slate-800">Products</a><a href="/admin/content/" className="rounded-lg border border-orange-500 px-3 py-2 text-sm font-semibold text-orange-300 hover:bg-slate-800">Edit Website</a><a href="/admin/categories/" className="rounded-lg border border-orange-500 px-3 py-2 text-sm font-semibold text-orange-300 hover:bg-slate-800">Categories</a><button onClick={logout} className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold hover:bg-slate-800">Sign out</button></div>
         </div>
       </header>
 
