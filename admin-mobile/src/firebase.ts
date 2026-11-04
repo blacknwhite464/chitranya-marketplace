@@ -1,10 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApp, getApps, initializeApp } from 'firebase/app';
-import {
-  getAuth,
-  getReactNativePersistence,
-  initializeAuth,
-} from 'firebase/auth';
+import { getAuth, initializeAuth } from 'firebase/auth';
+// Firebase 13.2.0 exposes this in its React Native runtime entry, but omits it
+// from the shared TypeScript declarations. Expo Metro selects the RN entry.
+// @ts-expect-error - React Native-only Firebase Auth export.
+import { getReactNativePersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
