@@ -30,6 +30,7 @@ type Product = {
   active: boolean;
   mainCategory?: string;
   subCategory?: string;
+  unit?: string;
 };
 
 const emptyForm = {
@@ -37,6 +38,7 @@ const emptyForm = {
   category: "Electronics",
   subCategory: "",
   price: "",
+  unit: "pcs",
   emoji: "📦",
   description: "",
   specifications: "",
@@ -131,6 +133,7 @@ export default function AdminProductsPage() {
       category: product.mainCategory || (product.category === "Services" ? "Home Services" : product.category),
       subCategory: product.subCategory ?? "",
       price: String(product.price),
+      unit: product.unit || "pcs",
       emoji: product.emoji,
       imageUrl: product.imageUrl ?? "",
       description: product.description,
@@ -196,6 +199,7 @@ export default function AdminProductsPage() {
       mainCategory: form.category,
       subCategory: form.subCategory,
       price,
+      unit: form.unit,
       emoji: "",
       imageUrl,
       description: form.description.trim(),
@@ -292,7 +296,10 @@ export default function AdminProductsPage() {
               <label className="block text-sm font-semibold text-slate-700">Price (NPR)
                 <input required type="number" min="1" step="1" value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} className="mt-1 w-full rounded-lg border px-3 py-2" placeholder="45000" />
               </label>
-              <label className="block text-sm font-semibold text-slate-700">Stock
+              <label className="block text-sm font-semibold text-slate-700">Unit
+                <select value={form.unit} onChange={(event) => setForm({ ...form, unit: event.target.value })} className="mt-1 w-full rounded-lg border bg-white px-3 py-2"><option value="pcs">Piece (pcs)</option><option value="set">Set</option><option value="box">Box</option><option value="pair">Pair</option><option value="kg">Kilogram (kg)</option><option value="g">Gram (g)</option><option value="meter">Meter (m)</option><option value="feet">Feet (ft)</option><option value="litre">Litre (L)</option><option value="roll">Roll</option><option value="pack">Pack</option><option value="unit">Unit</option><option value="service">Service</option></select>
+              </label>
+              <label className="col-span-2 block text-sm font-semibold text-slate-700">Stock
                 <input required type="number" min="0" step="1" value={form.stock} onChange={(event) => setForm({ ...form, stock: event.target.value })} className="mt-1 w-full rounded-lg border px-3 py-2" />
               </label>
             </div>
@@ -347,7 +354,7 @@ export default function AdminProductsPage() {
                     <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-slate-50 p-1">{product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full object-contain" /> : <span className="text-center text-[8px] font-black uppercase leading-tight tracking-wide text-blue-950">CHITRANYA<br/><span className="font-semibold text-slate-400">No Product Photo</span></span>}</div>
                     <div className="min-w-0">
                       <h3 className="truncate font-bold text-slate-900">{product.name}</h3>
-                      <p className="text-sm text-slate-500">{product.mainCategory || product.category}{product.subCategory ? " / " + product.subCategory : ""} · {money(product.price)} · Stock: {product.stock}</p>
+                      <p className="text-sm text-slate-500">{product.mainCategory || product.category}{product.subCategory ? " / " + product.subCategory : ""} · {money(product.price)} / {product.unit || "pcs"} · Stock: {product.stock}</p>
                       <p className={product.active ? "text-xs font-semibold text-green-700" : "text-xs font-semibold text-slate-500"}>{product.active ? "Visible in store" : "Hidden from store"}</p>
                     </div>
                   </div>
