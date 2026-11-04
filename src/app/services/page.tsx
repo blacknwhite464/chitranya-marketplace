@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
@@ -17,6 +17,13 @@ export default function ServicesPage() {
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("service");
+    if (requested && services.includes(requested)) {
+      setForm((current) => ({ ...current, service: requested }));
+    }
+  }, [services]);
 
   async function submitBooking(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
