@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { collection, onSnapshot, orderBy, query, doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query, doc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
 
@@ -87,6 +87,17 @@ export default function AdminDashboardPage() {
     }
   }
 
+  async function deleteOrder(order: Order) {
+    const reference = order.orderId || order.id;
+    if (!window.confirm(`Are you sure you want to permanently delete order ${reference}? This cannot be undone.`)) return;
+    try {
+      await deleteDoc(doc(db, "orders", order.id));
+    } catch (deleteError) {
+      console.error("Could not delete order:", deleteError);
+      setError("Could not delete this order. Please check Firestore rules and try again.");
+    }
+  }
+
   async function changeBookingStatus(bookingId: string, status: string) {
     try { await updateDoc(doc(db, "serviceBookings", bookingId), { status }); }
     catch (updateError) { console.error("Could not update service booking:", updateError); setError("Could not update this service booking. Check Firestore rules and try again."); }
@@ -135,9 +146,12 @@ export default function AdminDashboardPage() {
               <article key={order.id} className="rounded-2xl bg-white p-5 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div><p className="font-black text-slate-900">{order.orderId || order.id}</p><p className="mt-1 text-sm text-slate-500">{order.createdAt?.toDate ? order.createdAt.toDate().toLocaleString() : "Date unavailable"}</p></div>
-                  <select aria-label="Order status" value={order.status || "Pending"} onChange={(event) => void changeStatus(order.id, event.target.value)} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800">
-                    {["Pending", "Confirmed", "Processing", "Shipped", "Delivered", "Cancelled"].map((status) => <option key={status} value={status}>{status}</option>)}
-                  </select>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <select aria-label="Order status" value={order.status || "Pending"} onChange={(event) => void changeStatus(order.id, event.target.value)} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800">
+                      {["Pending", "Confirmed", "Processing", "Shipped", "Delivered", "Cancelled"].map((status) => <option key={status} value={status}>{status}</option>)}
+                    </select>
+                    <button type="button" onClick={() => void deleteOrder(order)} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2">Delete Order</button>
+                  </div>
                 </div>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <div><h3 className="font-bold text-slate-800">Customer</h3><p className="mt-1 text-sm text-slate-700">{order.customerName || "—"} · {order.phone || "—"}</p><p className="text-sm text-slate-600">{order.address || ""}, {order.city || ""}</p>{order.notes && <p className="mt-1 text-sm text-slate-500">Note: {order.notes}</p>}</div>
