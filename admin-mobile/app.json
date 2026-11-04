@@ -21,6 +21,14 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "description": "Official CHITRANYA store administration app"
+    "description": "Official CHITRANYA store administration app",
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow CHITRANYA Admin to select product photos from your library."
+        }
+      ]
+    ]
   }
 }
