@@ -3,7 +3,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 
 const serviceGroups = [
   { title: "Home repairs & installation", items: ["Plumbing & Water Systems", "Electrical Installation & Repair", "AC Installation & Servicing", "Appliance Repair", "Hardware Installation", "TV & Wall Mounting"] },
@@ -26,6 +26,7 @@ export default function ServicesPage() {
     try {
       const booking = await addDoc(collection(db, "serviceBookings"), {
         ...form,
+        ...(auth.currentUser ? { userId: auth.currentUser.uid } : {}),
         status: "Pending",
         source: "website",
         createdAt: serverTimestamp(),
@@ -44,7 +45,7 @@ export default function ServicesPage() {
       <header className="border-b bg-white">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-4">
           <Link href="/" className="text-2xl font-black text-blue-950">CHITRANYA<span className="text-orange-500">.</span></Link>
-          <nav className="flex flex-wrap items-center gap-5 text-sm font-bold"><Link href="/electronics/">Electronics</Link><Link href="/hardware/">Hardware</Link><Link href="/services/" className="text-orange-600">Services</Link><Link href="/products/">Shop</Link><Link href="/cart/">Cart</Link></nav>
+          <nav className="flex flex-wrap items-center gap-5 text-sm font-bold"><Link href="/electronics/">Electronics</Link><Link href="/hardware/">Hardware</Link><Link href="/services/" className="text-orange-600">Services</Link><Link href="/products/">Shop</Link><Link href="/cart/">Cart</Link><Link href="/account/">Account</Link></nav>
         </div>
       </header>
 
