@@ -35,6 +35,7 @@ type Product = {
 const emptyForm = {
   name: "",
   category: "Electronics",
+  subCategory: "",
   price: "",
   emoji: "📦",
   description: "",
@@ -50,6 +51,7 @@ export default function AdminProductsPage() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
+  const [availableSubcategories, setAvailableSubcategories] = useState<{ id: string; mainCategory: string; name: string; active: boolean }[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [editingDocId, setEditingDocId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -69,6 +71,12 @@ export default function AdminProductsPage() {
       }
 
       setChecking(false);
+      const unsubscribeCategories = onSnapshot(collection(db, "categories"), (snapshot) => {
+        setAvailableSubcategories(snapshot.docs.map((entry) => {
+          const data = entry.data();
+          return { id: entry.id, mainCategory: String(data.mainCategory ?? ""), name: String(data.name ?? ""), active: data.active !== false };
+        }).filter((item) => item.active));
+      }, (categoryError) => { console.error(categoryError); });
       unsubscribeProducts = onSnapshot(
         collection(db, "products"),
         (snapshot) => {
@@ -118,7 +126,8 @@ export default function AdminProductsPage() {
     setEditingDocId(product.docId);
     setForm({
       name: product.name,
-      category: product.category,
+      category: product.mainCategory || (product.category === "Services" ? "Home Services" : product.category),
+      subCategory: product.subCategory ?? "",
       price: String(product.price),
       emoji: product.emoji,
       imageUrl: product.imageUrl ?? "",
@@ -173,9 +182,17 @@ export default function AdminProductsPage() {
       return;
     }
 
+    if (!form.subCategory) {
+      setError("Please select a subcategory. If the list is empty, add subcategories in Manage Categories first.");
+      setSaving(false);
+      return;
+    }
+
     const productData = {
       name: form.name.trim(),
       category: form.category,
+      mainCategory: form.category,
+      subCategory: form.subCategory,
       price,
       emoji: "",
       imageUrl,
@@ -252,11 +269,19 @@ export default function AdminProductsPage() {
             </label>
 
             <label className="block text-sm font-semibold text-slate-700">Category
-              <select value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })} className="mt-1 w-full rounded-lg border bg-white px-3 py-2">
+              <select value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value, subCategory: "" })} className="mt-1 w-full rounded-lg border bg-white px-3 py-2">
                 <option>Electronics</option>
                 <option>Hardware</option>
-                <option>Services</option>
+                <option>Home Services</option>
               </select>
+            </label>
+
+            <label className="block text-sm font-semibold text-slate-700">Subcategory
+              <select required value={form.subCategory} onChange={(event) => setForm({ ...form, subCategory: event.target.value })} className="mt-1 w-full rounded-lg border bg-white px-3 py-2">
+                <option value="">Select a subcategory</option>
+                {availableSubcategories.filter((item) => item.mainCategory === form.category).sort((x, y) => x.name.localeCompare(y.name)).map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}
+              </select>
+              {!availableSubcategories.some((item) => item.mainCategory === form.category && item.active) && <span className="mt-1 block text-xs font-medium text-amber-700">No subcategories found. Open Manage Categories and add some first.</span>}
             </label>
 
             <div className="grid grid-cols-2 gap-3">
