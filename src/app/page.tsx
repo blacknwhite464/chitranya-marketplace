@@ -69,6 +69,7 @@ export default function Home() {
             <a href="/electronics/" className="hover:text-blue-700">Electronics</a>
             <a href="/hardware/" className="hover:text-blue-700">Hardware</a>
             <a href="/services/" className="hover:text-blue-700">Services</a>
+            <a href="/account/" className="hover:text-blue-700">My Account</a>
             <a href="#contact" className="hover:text-blue-700">Contact</a>
           </nav>
 
