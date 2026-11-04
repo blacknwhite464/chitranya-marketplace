@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";\nimport { useSiteContent } from "@/lib/siteContent";
+import { auth, db } from "@/lib/firebase";
+import { useSiteContent } from "@/lib/siteContent";
 
 const serviceGroups = [
   { title: "Home repairs & installation", items: ["Plumbing & Water Systems", "Electrical Installation & Repair", "AC Installation & Servicing", "Appliance Repair", "Hardware Installation", "TV & Wall Mounting"] },
@@ -12,7 +13,8 @@ const serviceGroups = [
 ];
 
 export default function ServicesPage() {
-  const services = useMemo(() => serviceGroups.flatMap((group) => group.items), []);\n  const content = useSiteContent();
+  const services = useMemo(() => serviceGroups.flatMap((group) => group.items), []);
+  const content = useSiteContent();
   const [form, setForm] = useState({ customerName: "", phone: "", email: "", service: "", address: "", city: "Banepa", preferredDate: "", preferredTime: "Morning (9 AMâ€“12 PM)", details: "" });
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState("");
