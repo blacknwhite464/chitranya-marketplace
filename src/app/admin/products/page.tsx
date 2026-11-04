@@ -276,7 +276,7 @@ export default function AdminProductsPage() {
                   if (file) setImagePreview(URL.createObjectURL(file));
                 }} className="mt-1 block w-full rounded-lg border bg-white px-3 py-2 text-sm" />
               </label>
-              {imagePreview && <div className="flex items-center gap-3"><img src={imagePreview} alt="Product preview" className="h-24 w-24 rounded-lg border object-contain" /><button type="button" onClick={() => { setSelectedImage(null); setImagePreview(""); setForm({ ...form, imageUrl: "" }); }} className="text-sm font-semibold text-red-600">Remove photo</button></div>}
+              <div className="flex flex-wrap items-end gap-3"><div className="flex h-60 w-60 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-3">{imagePreview ? <img src={imagePreview} alt="Product preview" className="h-full w-full object-contain" /> : <div className="text-center"><span className="block text-lg font-black tracking-widest text-blue-950">CHITRANYA</span><span className="mt-2 block text-xs font-bold uppercase tracking-wider text-slate-400">No Product Photo</span></div>}</div>{imagePreview && <button type="button" onClick={() => { setSelectedImage(null); setImagePreview(""); setForm({ ...form, imageUrl: "" }); }} className="text-sm font-semibold text-red-600">Remove photo</button>}</div>
               <p className="text-xs text-slate-500">Upload a clear product photo. It will appear on the shop and product details page.</p>
             </div>
 
@@ -315,7 +315,7 @@ export default function AdminProductsPage() {
               {products.map((product) => (
                 <article key={product.docId} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-4 shadow-sm">
                   <div className="flex min-w-0 items-center gap-3">
-                    {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-14 w-14 shrink-0 rounded-xl border bg-white object-contain" /> : <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xs font-bold text-slate-400">NO PHOTO</span>}
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-slate-50 p-1">{product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full object-contain" /> : <span className="text-center text-[8px] font-black uppercase leading-tight tracking-wide text-blue-950">CHITRANYA<br/><span className="font-semibold text-slate-400">No Product Photo</span></span>}</div>
                     <div className="min-w-0">
                       <h3 className="truncate font-bold text-slate-900">{product.name}</h3>
                       <p className="text-sm text-slate-500">{product.mainCategory || product.category}{product.subCategory ? " / " + product.subCategory : ""} · {money(product.price)} · Stock: {product.stock}</p>
