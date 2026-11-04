@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { addDoc, collection, deleteDoc, doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDocs, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
 import { db } from './firebase';
 
 type Product={docId:string;id?:number;name:string;category:string;mainCategory?:string;subCategory?:string;price:number;stock:number;active:boolean;description?:string;imageUrl?:string;specifications?:string[]};
@@ -42,7 +42,7 @@ export default function ManagementScreen(){
  }
  async function removeProduct(p:Product){Alert.alert('Delete product',`Delete ${p.name}?`,[{text:'Cancel',style:'cancel'},{text:'Delete',style:'destructive',onPress:()=>{void deleteDoc(doc(db,'products',p.docId)).catch(()=>setError('Could not delete product.'))}}])}
  async function saveCategory(){if(!categoryName.trim())return;setBusy(true);setError('');try{if(editingCategory)await updateDoc(doc(db,'categories',editingCategory),{mainCategory:categoryMain,name:categoryName.trim()});else await addDoc(collection(db,'categories'),{mainCategory:categoryMain,name:categoryName.trim(),active:true});setCategoryName('');setEditingCategory('')}catch{setError('Could not save category.')}finally{setBusy(false)}}
- async function removeCategory(c:Category){Alert.alert('Delete subcategory',`Delete ${c.name}?`,[{text:'Cancel',style:'cancel'},{text:'Delete',style:'destructive',onPress:()=>{void deleteDoc(doc(db,'categories',c.id)).catch(()=>setError('Could not delete category.'))}}])}
+ async function removeCategory(c:Category){Alert.alert('Delete subcategory',`Delete ${c.name}?`,[{text:'Cancel',style:'cancel'},{text:'Delete',style:'destructive',onPress:()=>{void (async()=>{try{const used=await getDocs(query(collection(db,'products'),where('subCategory','==',c.name)));if(!used.empty){setError('Cannot delete: products still use this subcategory. Reassign those products first.');return}await deleteDoc(doc(db,'categories',c.id))}catch{setError('Could not delete category.')}})()}}])}
  async function setBookingStatus(b:Booking,status:string){try{await updateDoc(doc(db,'serviceBookings',b.id),{status})}catch{setError('Could not update booking status.')}}
  async function saveStock(p:Product){const value=Math.max(0,Number(stockDraft[p.docId]??p.stock)||0);try{await updateDoc(doc(db,'products',p.docId),{stock:value});setStockDraft(old=>({...old,[p.docId]:String(value)}))}catch{setError('Could not update stock.')}}
  const tabs=['Products','Categories','Bookings','Customers','Inventory'];
