@@ -43,6 +43,7 @@ export default function AdminPricingPage() {
         snapshot.docs.forEach((entry) => { next[entry.id] = Number(entry.data().discountPercent ?? 0); });
         setRules(next);
         setDraftRules(Object.fromEntries(MAIN_CATEGORIES.map((category) => [category, String(next[category] ?? 0)])));
+        setDraftSubRules((old) => ({ ...old, ...Object.fromEntries(Object.entries(next).filter(([id]) => id.startsWith("subcategory:")).map(([id, value]) => [id, String(value)])) }));
       }, (err) => { console.error(err); setError("Could not load category pricing rules."); });
       stopCategories = onSnapshot(collection(db, "categories"), (snapshot) => {
         const list = snapshot.docs.map((entry) => { const data = entry.data(); return { id: entry.id, name: String(data.name ?? ""), mainCategory: String(data.mainCategory ?? ""), active: data.active !== false }; }).filter((item) => item.active);
