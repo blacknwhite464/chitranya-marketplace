@@ -121,8 +121,8 @@ export default function ProductDetailsClient({ id }: { id: string }) {
       <div className="mx-auto max-w-7xl px-6 py-8">
         <Link href="/products/" className="font-semibold text-blue-700">← Back to Products</Link>
         <div className="mt-8 grid gap-12 rounded-2xl bg-white p-6 shadow-sm md:grid-cols-2 md:p-12">
-          <div className="flex min-h-80 items-center justify-center overflow-hidden rounded-2xl bg-white p-6">
-            {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="max-h-[480px] w-full object-contain" /> : <span className="text-sm font-semibold uppercase tracking-wider text-slate-400">Product photo coming soon</span>}
+          <div className="flex aspect-square w-full max-w-[520px] items-center justify-center overflow-hidden rounded-2xl border border-slate-100 bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+            {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full object-contain" /> : <div className="text-center"><span className="block text-3xl font-black tracking-[0.18em] text-blue-950">CHITRANYA</span><span className="mt-3 block text-xs font-bold uppercase tracking-[0.2em] text-slate-400">No Product Photo</span></div>}
           </div>
           <div>
             <p className="font-bold uppercase tracking-widest text-blue-700">{product.category}</p>
