@@ -27,6 +27,8 @@ type Product = {
   specifications: string[];
   stock: number;
   active: boolean;
+  mainCategory?: string;
+  subCategory?: string;
 };
 
 const emptyForm = {
@@ -45,7 +47,7 @@ const money = (value: number) => "NPR " + value.toLocaleString("en-IN");
 export default function AdminProductsPage() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
-  const [products, setProducts] = useState<Product[]>([]);\n  const [subcategories, setSubcategories] = useState<{ id: string; mainCategory: string; name: string }[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [editingDocId, setEditingDocId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -73,6 +75,8 @@ export default function AdminProductsPage() {
               id: Number(data.id ?? item.id),
               name: String(data.name ?? ""),
               category: String(data.category ?? "Electronics"),
+              mainCategory: typeof data.mainCategory === "string" ? data.mainCategory : undefined,
+              subCategory: typeof data.subCategory === "string" ? data.subCategory : undefined,
               price: Number(data.price ?? 0),
               emoji: String(data.emoji ?? "📦"),
               description: String(data.description ?? ""),
