@@ -12,6 +12,7 @@ type StoreProduct = {
   category: string;
   price: number;
   emoji: string;
+  imageUrl?: string;
   description: string;
   specifications: string[];
   stock: number;
@@ -46,7 +47,8 @@ export default function ProductDetailsClient({ id }: { id: string }) {
               name: String(data.name ?? ""),
               category: String(data.category ?? "Other"),
               price: Number(data.price ?? 0),
-              emoji: String(data.emoji ?? "📦"),
+              emoji: "",
+              imageUrl: String(data.imageUrl ?? ""),
               description: String(data.description ?? ""),
               specifications: Array.isArray(data.specifications)
                 ? data.specifications.map(String)
@@ -111,7 +113,7 @@ export default function ProductDetailsClient({ id }: { id: string }) {
             <a href="/#contact" className="hover:text-orange-400">Contact</a>
           </nav>
           <Link href="/cart/" className="rounded-lg bg-orange-500 px-4 py-2 font-bold text-white hover:bg-orange-600">
-            🛒 Cart: {itemCount}
+            Cart: {itemCount}
           </Link>
         </div>
       </header>
@@ -119,8 +121,8 @@ export default function ProductDetailsClient({ id }: { id: string }) {
       <div className="mx-auto max-w-7xl px-6 py-8">
         <Link href="/products/" className="font-semibold text-blue-700">← Back to Products</Link>
         <div className="mt-8 grid gap-12 rounded-2xl bg-white p-6 shadow-sm md:grid-cols-2 md:p-12">
-          <div className="flex min-h-80 items-center justify-center rounded-2xl bg-slate-100 text-9xl">
-            {product.emoji}
+          <div className="flex min-h-80 items-center justify-center overflow-hidden rounded-2xl bg-white p-6">
+            {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="max-h-[480px] w-full object-contain" /> : <span className="text-sm font-semibold uppercase tracking-wider text-slate-400">Product photo coming soon</span>}
           </div>
           <div>
             <p className="font-bold uppercase tracking-widest text-blue-700">{product.category}</p>
@@ -171,7 +173,8 @@ export default function ProductDetailsClient({ id }: { id: string }) {
                   name: product.name,
                   category: product.category,
                   price: product.price,
-                  emoji: product.emoji,
+                  emoji: "",
+                  imageUrl: product.imageUrl,
                 }, quantity);
                 setAdded(true);
               }}
