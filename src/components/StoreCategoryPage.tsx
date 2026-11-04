@@ -32,6 +32,8 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [selectedSubcategory, setSelectedSubcategory] = useState("All");
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("featured");
+  const [inStockOnly, setInStockOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [addedId, setAddedId] = useState<number | null>(null);
@@ -85,9 +87,17 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
     const matchesMain = mainCategory === "All" || product.mainCategory === mainCategory;
     const matchesSub = selectedSubcategory === "All" || product.subCategory === selectedSubcategory;
     const term = search.trim().toLowerCase();
-    const matchesSearch = !term || product.name.toLowerCase().includes(term) || product.subCategory.toLowerCase().includes(term);
-    return matchesMain && matchesSub && matchesSearch;
-  }), [products, mainCategory, selectedSubcategory, search]);
+    const searchable = `${product.name} ${product.subCategory} ${product.description} ${product.mainCategory}`.toLowerCase();
+    const matchesSearch = !term || searchable.includes(term);
+    const matchesStock = !inStockOnly || product.stock > 0;
+    return matchesMain && matchesSub && matchesSearch && matchesStock;
+  }).sort((a, b) => {
+    if (sortBy === "price-low") return a.price - b.price;
+    if (sortBy === "price-high") return b.price - a.price;
+    if (sortBy === "name") return a.name.localeCompare(b.name);
+    if (sortBy === "stock") return b.stock - a.stock;
+    return b.id - a.id;
+  }), [products, mainCategory, selectedSubcategory, search, inStockOnly, sortBy]);
 
   const heading = mainCategory === "All" ? "Explore All Products" : mainCategory === "Home Services" ? "Home Services" : mainCategory;
   const intro = mainCategory === "All"
@@ -109,7 +119,10 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search products, brands and more..." className="w-full bg-transparent px-4 py-3 text-sm outline-none" />
             <span className="bg-orange-500 px-5 py-3 font-bold text-white">Search</span>
           </div>
-          <Link href="/cart/" className="ml-auto rounded-lg bg-blue-950 px-4 py-3 text-sm font-bold text-white">Cart ({itemCount})</Link>
+          <div className="ml-auto flex items-center gap-2">
+            <Link href="/account/" className="hidden rounded-lg border border-slate-200 px-3 py-3 text-sm font-bold text-blue-950 hover:bg-slate-50 sm:inline-flex">My Account</Link>
+            <Link href="/cart/" className="rounded-lg bg-blue-950 px-4 py-3 text-sm font-bold text-white">Cart ({itemCount})</Link>
+          </div>
         </div>
         <nav className="mx-auto flex max-w-[1440px] gap-7 overflow-x-auto border-t px-4 py-3 text-sm font-bold">
           <Link href="/electronics/" className={mainCategory==="Electronics"?"text-orange-600":"hover:text-orange-600"}>Electronics</Link>
@@ -136,7 +149,7 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
         <div className="mt-8 grid items-start gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
           {isShopCategory&&<aside className="overflow-hidden rounded-xl border bg-white"><div className="bg-blue-950 px-5 py-4 text-sm font-extrabold uppercase text-white">Shop {mainCategory}</div><button onClick={()=>setSelectedSubcategory("All")} className="w-full border-b px-5 py-3 text-left text-sm font-bold hover:bg-orange-50">All {mainCategory}</button>{visibleSubcategories.map(item=><button key={item.id} onClick={()=>setSelectedSubcategory(item.name)} className={selectedSubcategory===item.name?"w-full border-b bg-orange-50 px-5 py-3 text-left text-sm font-bold text-orange-700":"w-full border-b px-5 py-3 text-left text-sm hover:bg-slate-50"}>{item.name} <span className="float-right">â€º</span></button>)}</aside>}
           <div id="shop-products" className="min-w-0">
-            <div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">CHITRANYA Collection</p><h2 className="mt-1 text-2xl font-black">{selectedSubcategory==="All"?"Featured "+(mainCategory==="All"?"Products & Services":mainCategory):selectedSubcategory}</h2></div><span className="rounded-full bg-white px-4 py-2 text-sm text-slate-500 shadow-sm">{loading?"Loading...":visibleProducts.length+" products found"}</span></div>
+            <div className="mb-5 flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">CHITRANYA Collection</p><h2 className="mt-1 text-2xl font-black">{selectedSubcategory==="All"?"Featured "+(mainCategory==="All"?"Products & Services":mainCategory):selectedSubcategory}</h2><p className="mt-1 text-sm text-slate-500">{loading?"Loading...":visibleProducts.length+" matching products"}</p></div><div className="flex flex-wrap items-center gap-3"><label className="flex items-center gap-2 text-sm font-semibold text-slate-600"><input type="checkbox" checked={inStockOnly} onChange={(e)=>setInStockOnly(e.target.checked)} className="h-4 w-4 accent-orange-500"/> In stock only</label><label className="flex items-center gap-2 text-sm font-semibold text-slate-600">Sort by<select value={sortBy} onChange={(e)=>setSortBy(e.target.value)} className="max-w-[180px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-orange-500"><option value="featured">Featured</option><option value="price-low">Price: Low to High</option><option value="price-high">Price: High to Low</option><option value="name">Name: A to Z</option><option value="stock">Availability</option></select></label></div></div>
             {error&&<p role="alert" className="mb-5 rounded-lg bg-red-50 p-4 text-red-700">{error}</p>}
             {loading?<p className="rounded-xl bg-white py-16 text-center text-slate-500">Loading CHITRANYA collection...</p>:visibleProducts.length?<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {visibleProducts.map(product=><article key={product.id} className="group overflow-hidden rounded-xl border bg-white transition hover:-translate-y-1 hover:shadow-xl">
