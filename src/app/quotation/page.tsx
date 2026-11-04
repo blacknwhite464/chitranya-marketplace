@@ -20,7 +20,7 @@ export default function QuotationPage() {
     return ()=>{stopProducts();stopRules();};
   },[]);
   const priced=useMemo(()=>products.map((p)=>{const discount=p.discountMode==="fixed"?0:p.discountMode==="override"?p.discountPercent:(rules[p.mainCategory]??0);const safe=Math.min(100,Math.max(0,discount));return {...p,discountPercent:safe,finalPrice:Math.round(p.price*(1-safe/100))};}),[products,rules]);
-  const selected=lines.map((line)=>{const product=priced.find((p)=>p.docId===line.productId);return product?{...product,quantity:line.quantity,lineTotal:product.finalPrice*line.quantity}:null;}).filter((p):p is NonNullable<typeof p>=>p!==null);
+  const selected=lines.flatMap((line)=>{const product=priced.find((p)=>p.docId===line.productId);return product?[{...product,quantity:line.quantity,lineTotal:product.finalPrice*line.quantity}]:[];});
   const subtotal=selected.reduce((sum,p)=>sum+p.price*p.quantity,0); const total=selected.reduce((sum,p)=>sum+p.lineTotal,0); const savings=subtotal-total;
   function add(productId:string){setLines((old)=>old.some((x)=>x.productId===productId)?old.map((x)=>x.productId===productId?{...x,quantity:x.quantity+1}:x):[...old,{productId,quantity:1}]);}
   function setQty(productId:string,quantity:number){setLines((old)=>quantity<=0?old.filter((x)=>x.productId!==productId):old.map((x)=>x.productId===productId?{...x,quantity:Math.min(999,quantity)}:x));}
