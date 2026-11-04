@@ -26,15 +26,21 @@ const hardware = [
 ];
 
 const services = [
-  ["🔧", "Plumbing", "Professional plumbing and repair"],
-  ["⚡", "Electrical Repair", "Electrical installation and repair"],
-  ["❄️", "AC Services", "AC installation and maintenance"],
-  ["🛠️", "Appliance Repair", "Repair for home appliances"],
-  ["📹", "CCTV Installation", "Security camera installation"],
-  ["🧹", "Home Cleaning", "Reliable home cleaning services"],
-  ["🎨", "Painting", "Interior and exterior painting"],
-  ["🏠", "Renovation", "Home improvement and renovation"],
-  ["🔩", "Hardware Installation", "Professional fitting and installation"],
+  ["Plumbing & Water Systems", "Pipe repairs, leak fixes, taps, pumps and bathroom plumbing."],
+  ["Electrical Installation & Repair", "Wiring, switches, lighting, power points and electrical fault repairs."],
+  ["AC Installation & Servicing", "Air conditioner installation, cleaning, maintenance and repair."],
+  ["Appliance Repair", "Support for televisions, refrigerators, washing machines and kitchen appliances."],
+  ["CCTV & Security Systems", "Camera installation, configuration, maintenance and troubleshooting."],
+  ["Home & Office Cleaning", "Regular, deep and move-in/move-out cleaning support."],
+  ["Painting & Wall Finishing", "Interior and exterior painting, touch-ups and surface preparation."],
+  ["Home Renovation", "Room upgrades, repairs, remodeling and improvement projects."],
+  ["Hardware Installation", "Shelves, fittings, fixtures, locks and other hardware installation."],
+  ["Carpentry & Furniture", "Door repairs, cabinet fitting, furniture assembly and woodwork."],
+  ["Bathroom & Kitchen Fitting", "Sanitaryware, taps, sinks, showers and kitchen fixture installation."],
+  ["TV & Wall Mounting", "Television mounting, bracket fitting and cable management."],
+  ["Office Maintenance", "Routine repairs and maintenance for shops, offices and workplaces."],
+  ["Networking & Wi-Fi Setup", "Router setup, network cabling and connectivity troubleshooting."],
+  ["Inverter & Backup Power", "Inverter, battery and backup power installation support."],
 ];
 
 export default function Home() {
@@ -55,7 +61,7 @@ export default function Home() {
           <nav className="flex flex-wrap gap-5 text-sm font-semibold">
             <a href="#" className="hover:text-blue-700">Home</a>
             <a href="/products/" className="hover:text-blue-700">Products</a>
-            <Link href="/cart/" className="relative z-50 inline-flex cursor-pointer items-center rounded-lg bg-orange-500 px-4 py-2 font-bold text-white hover:bg-orange-600">🛒 Cart ({itemCount})</Link>
+            <Link href="/cart/" className="relative z-50 inline-flex cursor-pointer items-center rounded-lg bg-orange-500 px-4 py-2 font-bold text-white hover:bg-orange-600">Cart ({itemCount})</Link>
             <form action="/products/" method="GET" className="flex min-w-[220px] flex-1 max-w-md overflow-hidden rounded-lg border border-slate-200 bg-white">
               <input name="search" type="search" placeholder="Search products..." className="min-w-0 flex-1 px-4 py-2 text-sm text-slate-900 outline-none" />
               <button type="submit" className="bg-blue-800 px-4 py-2 text-sm font-bold text-white hover:bg-blue-900">Search</button>
@@ -107,15 +113,15 @@ export default function Home() {
           <div className="rounded-3xl border border-white/20 bg-white/10 p-10 backdrop-blur">
             <div className="grid grid-cols-2 gap-4 text-center">
               <div className="rounded-2xl bg-white/10 p-8">
-                <div className="text-5xl">📺</div>
+                <div className="text-2xl font-black tracking-wide">TV</div>
                 <p className="mt-3 font-bold">Electronics</p>
               </div>
               <div className="rounded-2xl bg-white/10 p-8">
-                <div className="text-5xl">🔨</div>
+                <div className="text-2xl font-black tracking-wide">TOOLS</div>
                 <p className="mt-3 font-bold">Hardware</p>
               </div>
               <div className="col-span-2 rounded-2xl bg-white/10 p-8">
-                <div className="text-5xl">🛠️</div>
+                <div className="text-2xl font-black tracking-wide">SERVICE</div>
                 <p className="mt-3 font-bold">Professional Home Services</p>
               </div>
             </div>
@@ -161,9 +167,9 @@ export default function Home() {
         <h2 className="mt-2 text-3xl font-black">Professional Home Services</h2>
         <p className="mt-3 text-slate-500">Book trusted professionals for your home and business.</p>
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {services.map(([emoji, name, description]) => (
+          {services.map(([name, description]) => (
             <div key={name} className="rounded-xl border bg-white p-6 shadow-sm">
-              <div className="text-4xl">{emoji}</div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-sm font-black text-blue-900">{name.split(" ").slice(0, 2).map((word) => word[0]).join("").toUpperCase()}</div>
               <h3 className="mt-4 text-lg font-bold">{name}</h3>
               <p className="mt-2 text-sm text-slate-500">{description}</p>
               <a href="#contact" className="mt-5 inline-block font-bold text-blue-700 hover:text-orange-600">
