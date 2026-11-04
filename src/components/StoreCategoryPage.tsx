@@ -12,21 +12,10 @@ type StoreProduct = CartProduct & {
   description: string;
   mainCategory: MainCategory;
   subCategory: string;
+  imageUrl?: string;
 };
 
 const MAIN_CATEGORIES: MainCategory[] = ["Electronics", "Hardware", "Home Services"];
-const EMOJIS: Record<string, string> = {
-  "Televisions & Smart TVs": "📺", "Refrigerators": "🧊", "Washing Machines": "🧺",
-  "Kitchen Appliances": "🍳", "Computers & Accessories": "💻", "CCTV & Security Systems": "📹",
-  "Hand Tools": "🔧", "Power Tools": "🛠️", "Plumbing Materials": "🚿",
-  "Electrical Accessories": "🔌", "Paint & Painting Equipment": "🎨",
-  "Construction Materials": "🧱", "Bathroom Fittings": "🚽", "Safety Equipment": "🦺",
-  "Plumbing Services": "🔧", "Plumbing": "🔧", "Electrical Repair": "⚡",
-  "AC Installation & Servicing": "❄️", "Appliance Repair": "🛠️",
-  "CCTV Installation": "📹", "Home Cleaning": "🧹", "Painting Services": "🎨",
-  "Painting": "🎨", "Home Renovation": "🏠", "Renovation": "🏠",
-  "Hardware Installation": "🔩",
-};
 const money = (value: number) => "NPR " + value.toLocaleString("en-IN");
 
 function normalizeMain(value: unknown): MainCategory | null {
@@ -59,7 +48,8 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
           name: String(data.name ?? ""),
           category: main,
           price: Number(data.price ?? 0),
-          emoji: String(data.emoji ?? "📦"),
+          emoji: "",
+          imageUrl: String(data.imageUrl ?? ""),
           stock: Number(data.stock ?? 0),
           description: String(data.description ?? ""),
           mainCategory: main,
@@ -118,7 +108,7 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search products, brands and more..." className="w-full bg-transparent px-4 py-3 text-sm outline-none" />
             <span className="bg-orange-500 px-5 py-3 font-bold text-white">Search</span>
           </div>
-          <Link href="/cart/" className="ml-auto rounded-lg bg-blue-950 px-4 py-3 text-sm font-bold text-white">🛒 Cart ({itemCount})</Link>
+          <Link href="/cart/" className="ml-auto rounded-lg bg-blue-950 px-4 py-3 text-sm font-bold text-white">Cart ({itemCount})</Link>
         </div>
         <nav className="mx-auto flex max-w-[1440px] gap-7 overflow-x-auto border-t px-4 py-3 text-sm font-bold">
           <Link href="/electronics/" className={mainCategory==="Electronics"?"text-orange-600":"hover:text-orange-600"}>Electronics</Link>
@@ -139,7 +129,7 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
         <div className="mb-5"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Shop by department</p><h2 className="mt-1 text-2xl font-black">Explore Categories</h2></div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {visibleSubcategories.map(item=><button key={item.id} onClick={()=>{setSelectedSubcategory(item.name);document.getElementById("shop-products")?.scrollIntoView({behavior:"smooth"});}} className={selectedSubcategory===item.name?"rounded-xl border-2 border-orange-500 bg-orange-50 p-4 text-left":"rounded-xl border bg-white p-4 text-left transition hover:-translate-y-1 hover:shadow-md"}>
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-2xl">{EMOJIS[item.name]||"📦"}</span><span className="mt-3 block text-sm font-extrabold">{item.name}</span><span className="mt-1 block text-xs text-slate-500">{products.filter(p=>p.mainCategory===item.mainCategory&&p.subCategory===item.name).length} products</span>
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-xs font-black tracking-wide text-blue-800">{item.name.split(/\s+/).slice(0,2).map((word)=>word[0]).join("").toUpperCase()}</span><span className="mt-3 block text-sm font-extrabold">{item.name}</span><span className="mt-1 block text-xs text-slate-500">{products.filter(p=>p.mainCategory===item.mainCategory&&p.subCategory===item.name).length} products</span>
           </button>)}
         </div>
         <div className="mt-8 grid items-start gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
@@ -149,7 +139,7 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
             {error&&<p role="alert" className="mb-5 rounded-lg bg-red-50 p-4 text-red-700">{error}</p>}
             {loading?<p className="rounded-xl bg-white py-16 text-center text-slate-500">Loading CHITRANYA collection...</p>:visibleProducts.length?<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {visibleProducts.map(product=><article key={product.id} className="group overflow-hidden rounded-xl border bg-white transition hover:-translate-y-1 hover:shadow-xl">
-                <div className="relative flex h-48 items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100"><span className="text-7xl transition group-hover:scale-110">{product.emoji}</span><span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-[10px] font-extrabold uppercase text-blue-900 shadow">{product.mainCategory}</span>{product.stock>0&&<span className="absolute right-3 top-3 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">In stock</span>}</div>
+                <div className="relative flex h-48 items-center justify-center overflow-hidden bg-white p-4">{product.imageUrl?<img src={product.imageUrl} alt={product.name} loading="lazy" className="h-full w-full object-contain transition duration-300 group-hover:scale-105"/>:<span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Product photo coming soon</span>}<span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-[10px] font-extrabold uppercase text-blue-900 shadow">{product.mainCategory}</span>{product.stock>0&&<span className="absolute right-3 top-3 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">In stock</span>}</div>
                 <div className="p-4"><p className="text-[11px] font-bold uppercase text-slate-400">{product.subCategory||product.mainCategory}</p><h3 className="mt-2 min-h-10 font-extrabold">{product.name}</h3><p className="mt-2 min-h-10 text-sm text-slate-500">{product.description}</p><p className="mt-4 text-xl font-black text-blue-950">{money(product.price)}</p><Link href={"/product/?id="+product.id} className="mt-4 block rounded-lg border border-blue-950 px-4 py-2.5 text-center text-sm font-bold text-blue-950 hover:bg-blue-50">View Details</Link><button onClick={()=>{addToCart(product);setAddedId(product.id);}} disabled={product.stock<=0} className="mt-2 w-full rounded-lg bg-orange-500 px-4 py-3 text-sm font-extrabold text-white hover:bg-orange-600 disabled:bg-slate-300">{addedId===product.id?"✓ Added to Cart":product.stock>0?"Add to Cart":"Out of Stock"}</button></div>
               </article>)}
             </div>:<p className="rounded-xl bg-white py-16 text-center text-slate-500">No active items found. Please check back soon.</p>}
