@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useCart } from "@/context/CartContext";
+import { useEffect, useState } from "react";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useCart, type CartProduct } from "@/context/CartContext";
 
 const electronics = [
   { name: "Television & Smart TV", image: "photo-1593359677879-a4bb92f829d1", description: "Smart entertainment for every room." },
@@ -63,8 +66,44 @@ function CategoryCard({ item, href, accent = "blue" }: { item: { name: string; i
   );
 }
 
+type HomeProduct = CartProduct & {
+  subCategory: string;
+  description: string;
+};
+
 export default function Home() {
-  const { itemCount } = useCart();
+  const { itemCount, addToCart } = useCart();
+  const [liveProducts, setLiveProducts] = useState<HomeProduct[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [addedProductId, setAddedProductId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const stop = onSnapshot(collection(db, "products"), (snapshot) => {
+      const rows: HomeProduct[] = snapshot.docs.flatMap((entry) => {
+        const data = entry.data();
+        const id = Number(data.id ?? entry.id);
+        const mainCategory = String(data.mainCategory ?? data.category ?? "");
+        if (!Number.isFinite(id) || data.active !== true || !["electronics", "hardware"].includes(mainCategory.toLowerCase())) return [];
+        return [{
+          id,
+          name: String(data.name ?? ""),
+          category: mainCategory,
+          price: Number(data.price ?? 0),
+          emoji: "",
+          imageUrl: String(data.imageUrl ?? ""),
+          stock: Number(data.stock ?? 0),
+          subCategory: String(data.subCategory ?? ""),
+          description: String(data.description ?? ""),
+        }];
+      });
+      setLiveProducts(rows.sort((a, b) => a.id - b.id));
+      setProductsLoading(false);
+    }, (error) => {
+      console.error("Homepage products could not be loaded:", error);
+      setProductsLoading(false);
+    });
+    return () => stop();
+  }, []);
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
@@ -126,6 +165,46 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </section>
+
+      <section id="featured-products" className="mx-auto max-w-7xl px-5 py-16">
+        <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-600">Available now at CHITRANYA</p>
+            <h2 className="mt-2 text-3xl font-black md:text-4xl">Featured Products</h2>
+            <p className="mt-3 text-slate-500">Live products from our store. Updated automatically from our catalogue.</p>
+          </div>
+          <Link href="/products/" className="rounded-lg bg-blue-950 px-5 py-3 text-sm font-extrabold text-white hover:bg-blue-800">View all products</Link>
+        </div>
+        {productsLoading ? (
+          <p className="rounded-xl border border-slate-200 bg-white py-14 text-center text-slate-500">Loading products...</p>
+        ) : liveProducts.length === 0 ? (
+          <p className="rounded-xl border border-slate-200 bg-white py-14 text-center text-slate-500">New products are coming soon. Please check our full catalogue.</p>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {liveProducts.slice(0, 8).map((product) => (
+              <article key={product.id} className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
+                <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-slate-50 p-6">
+                  {product.imageUrl ? (
+                    <img src={product.imageUrl} alt={product.name} loading="lazy" className="h-full w-full object-contain transition duration-300 group-hover:scale-105" />
+                  ) : (
+                    <span className="text-sm font-extrabold tracking-widest text-slate-400">CHITRANYA</span>
+                  )}
+                  <span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-[10px] font-extrabold uppercase text-blue-900 shadow">{product.category}</span>
+                  <span className={product.stock > 0 ? "absolute right-3 top-3 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700" : "absolute right-3 top-3 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-600"}>{product.stock > 0 ? "In stock" : "Out of stock"}</span>
+                </div>
+                <div className="flex flex-1 flex-col p-5">
+                  <p className="text-[11px] font-bold uppercase text-slate-400">{product.subCategory || product.category}</p>
+                  <h3 className="mt-2 min-h-12 line-clamp-2 font-extrabold text-slate-900">{product.name}</h3>
+                  <p className="mt-2 min-h-10 line-clamp-2 text-sm leading-5 text-slate-500">{product.description}</p>
+                  <p className="mt-4 text-2xl font-black text-blue-950">NPR {product.price.toLocaleString("en-IN")}</p>
+                  <Link href={product.subCategory ? "/products/?category=" + encodeURIComponent(product.subCategory) : "/products/"} className="mt-4 block rounded-xl border border-slate-200 px-4 py-3 text-center text-sm font-bold text-blue-950 hover:bg-blue-50">Explore category</Link>
+                  <button onClick={() => { addToCart(product); setAddedProductId(product.id); }} disabled={product.stock <= 0} className="mt-2 w-full rounded-xl bg-orange-500 px-4 py-3 text-sm font-extrabold text-white transition hover:bg-orange-600 disabled:bg-slate-300">{addedProductId === product.id ? "Added to Cart" : product.stock > 0 ? "Add to Cart" : "Out of Stock"}</button>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       <section id="electronics" className="mx-auto max-w-7xl px-5 py-20">
