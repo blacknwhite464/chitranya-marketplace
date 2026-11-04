@@ -20,6 +20,7 @@ import {
 import { collection, onSnapshot } from 'firebase/firestore';
 import { auth, db, ADMIN_UID } from './src/firebase';
 import OrdersScreen from './src/OrdersScreen';
+import ManagementScreen from './src/ManagementScreen';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -30,7 +31,7 @@ export default function App() {
   const [error, setError] = useState('');
   const [metrics, setMetrics] = useState({ orders: 0, pendingOrders: 0, orderValue: 0, products: 0, lowStock: 0, bookings: 0, pendingBookings: 0 });
   const [dataError, setDataError] = useState('');
-  const [activeTab, setActiveTab] = useState<'Dashboard' | 'Orders'>('Dashboard');
+  const [activeTab, setActiveTab] = useState<'Dashboard' | 'Orders' | 'Manage'>('Dashboard');
 
   useEffect(() => {
     return onAuthStateChanged(auth, async (nextUser) => {
@@ -150,9 +151,9 @@ export default function App() {
           <TouchableOpacity style={styles.signOutButton} onPress={handleLogout} disabled={busy}>{busy ? <ActivityIndicator color="#102A43" /> : <Text style={styles.signOutText}>Sign out</Text>}</TouchableOpacity>
         </View>
         <View style={styles.tabBar}>
-          {(['Dashboard', 'Orders'] as const).map((tab) => <TouchableOpacity key={tab} onPress={() => setActiveTab(tab)} style={[styles.tabButton, activeTab === tab && styles.activeTabButton]}><Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text></TouchableOpacity>)}
+          {(['Dashboard', 'Orders', 'Manage'] as const).map((tab) => <TouchableOpacity key={tab} onPress={() => setActiveTab(tab)} style={[styles.tabButton, activeTab === tab && styles.activeTabButton]}><Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text></TouchableOpacity>)}
         </View>
-        {activeTab === 'Orders' ? <OrdersScreen /> : <ScrollView contentContainerStyle={styles.dashboardContent}>
+        {activeTab === 'Orders' ? <OrdersScreen /> : activeTab === 'Manage' ? <ManagementScreen /> : <ScrollView contentContainerStyle={styles.dashboardContent}>
           <View style={styles.dashboardHeader}>
             <View>
               <Text style={styles.dashboardBrand}>CHITRANYA</Text>
