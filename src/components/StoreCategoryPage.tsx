@@ -86,7 +86,10 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
   const visibleSubcategories = useMemo(() => subcategories.filter((item) => mainCategory === "All" || item.mainCategory === mainCategory), [subcategories, mainCategory]);
 
   useEffect(() => {
-    const requested = new URLSearchParams(window.location.search).get("category");
+    const params = new URLSearchParams(window.location.search);
+    const requested = params.get("category");
+    const requestedSearch = params.get("search");
+    if (requestedSearch) setSearch(requestedSearch);
     if (!requested) return;
     const match = visibleSubcategories.find((item) => categoryKey(item.name) === categoryKey(requested));
     if (match) setSelectedSubcategory(match.name);
