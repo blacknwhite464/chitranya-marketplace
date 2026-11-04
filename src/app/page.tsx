@@ -241,7 +241,7 @@ export default function Home() {
 
       <section id="services" className="mx-auto max-w-7xl px-5 py-20">
         <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
-          <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-700">We are here to help</p><h2 className="mt-2 text-3xl font-black md:text-4xl">Professional Home Services</h2><p className="mt-3 max-w-2xl text-slate-500">Book trusted professionals for your home and business. Tell us what you need and our team will contact you to confirm the details.</p></div>
+          <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-700">We are here to help</p><h2 className="mt-2 text-3xl font-black md:text-4xl">{content.servicesTitle}</h2><p className="mt-3 max-w-2xl text-slate-500">{content.servicesDescription}</p></div>
           <Link href="/services/" className="rounded-lg bg-blue-950 px-5 py-3 text-sm font-extrabold text-white hover:bg-blue-800">Explore all services</Link>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -266,8 +266,7 @@ export default function Home() {
       </section>
 
       <footer className="bg-slate-950 px-6 py-8 text-center text-sm text-slate-400">
-        © {new Date().getFullYear()} CHITRANYA. All rights reserved.
-        <p className="mt-2">Electronics | Hardware | Home Services</p>
+        © {new Date().getFullYear()} {content.footerText}
       </footer>
     </main>
   );
