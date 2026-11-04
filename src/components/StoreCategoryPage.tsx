@@ -137,6 +137,7 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
           <Link href="/electronics/" className={mainCategory==="Electronics"?"text-orange-600":"hover:text-orange-600"}>Electronics</Link>
           <Link href="/hardware/" className={mainCategory==="Hardware"?"text-orange-600":"hover:text-orange-600"}>Hardware</Link>
           <Link href="/services/" className="hover:text-orange-600">Home Services</Link>
+          <Link href="/quotation/" className="whitespace-nowrap text-orange-600 hover:text-orange-700">Build a Quotation</Link>
           
         </nav>
       </header>
