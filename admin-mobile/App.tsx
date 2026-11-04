@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -16,7 +17,8 @@ import {
   signOut,
   User,
 } from 'firebase/auth';
-import { auth, ADMIN_UID } from './src/firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { auth, db, ADMIN_UID } from './src/firebase';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -25,6 +27,8 @@ export default function App() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [metrics, setMetrics] = useState({ orders: 0, pendingOrders: 0, orderValue: 0, products: 0, lowStock: 0, bookings: 0, pendingBookings: 0 });
+  const [dataError, setDataError] = useState('');
 
   useEffect(() => {
     return onAuthStateChanged(auth, async (nextUser) => {
@@ -38,6 +42,44 @@ export default function App() {
       setChecking(false);
     });
   }, []);
+
+  useEffect(() => {
+    if (!user || user.uid !== ADMIN_UID) return;
+
+    let ordersData: Array<Record<string, unknown>> = [];
+    let productsData: Array<Record<string, unknown>> = [];
+    let bookingsData: Array<Record<string, unknown>> = [];
+    const updateMetrics = () => {
+      const activeOrders = ordersData.filter((order) => String(order.status ?? '').toLowerCase() !== 'cancelled');
+      setMetrics({
+        orders: ordersData.length,
+        pendingOrders: ordersData.filter((order) => String(order.status ?? '').toLowerCase() === 'pending').length,
+        orderValue: activeOrders.reduce((sum, order) => sum + (Number(order.total) || 0), 0),
+        products: productsData.length,
+        lowStock: productsData.filter((product) => Number(product.stock ?? 0) <= 5).length,
+        bookings: bookingsData.length,
+        pendingBookings: bookingsData.filter((booking) => String(booking.status ?? '').toLowerCase() === 'pending').length,
+      });
+    };
+    const handleError = () => setDataError('Could not load live store data. Check your internet connection.');
+    const unsubOrders = onSnapshot(collection(db, 'orders'), (snapshot) => {
+      ordersData = snapshot.docs.map((item) => item.data());
+      setDataError('');
+      updateMetrics();
+    }, handleError);
+    const unsubProducts = onSnapshot(collection(db, 'products'), (snapshot) => {
+      productsData = snapshot.docs.map((item) => item.data());
+      setDataError('');
+      updateMetrics();
+    }, handleError);
+    const unsubBookings = onSnapshot(collection(db, 'serviceBookings'), (snapshot) => {
+      bookingsData = snapshot.docs.map((item) => item.data());
+      setDataError('');
+      updateMetrics();
+    }, handleError);
+
+    return () => { unsubOrders(); unsubProducts(); unsubBookings(); };
+  }, [user]);
 
   async function handleLogin() {
     setError('');
@@ -101,28 +143,54 @@ export default function App() {
     return (
       <SafeAreaView style={styles.screen}>
         <View style={styles.topLine} />
-        <View style={styles.dashboard}>
-          <View style={styles.logoMark}><Text style={styles.logoLetter}>C</Text></View>
-          <Text style={styles.brand}>CHITRANYA</Text>
-          <Text style={styles.brandSub}>ADMINISTRATION</Text>
-          <View style={styles.successIcon}><Text style={styles.successCheck}>✓</Text></View>
-          <Text style={styles.welcome}>You're signed in</Text>
-          <Text style={styles.signedInLabel}>Administrator account</Text>
-          <Text style={styles.accountEmail}>{user.email}</Text>
-          <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>Admin app connected</Text>
-            <Text style={styles.infoText}>Your secure Firebase administrator session is active.</Text>
-            <Text style={styles.infoNote}>Dashboard, orders and product management are the next modules.</Text>
+        <ScrollView contentContainerStyle={styles.dashboardContent}>
+          <View style={styles.dashboardHeader}>
+            <View>
+              <Text style={styles.dashboardBrand}>CHITRANYA</Text>
+              <Text style={styles.dashboardSubtitle}>ADMIN DASHBOARD</Text>
+            </View>
+            <TouchableOpacity style={styles.signOutButton} onPress={handleLogout} disabled={busy}>
+              {busy ? <ActivityIndicator color="#102A43" /> : <Text style={styles.signOutText}>Sign out</Text>}
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={[styles.primaryButton, busy && styles.buttonDisabled]}
-            onPress={handleLogout}
-            disabled={busy}
-            activeOpacity={0.85}
-          >
-            {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.primaryButtonText}>Sign out</Text>}
-          </TouchableOpacity>
-        </View>
+
+          <Text style={styles.greeting}>Store overview</Text>
+          <Text style={styles.dashboardHint}>Live information from your CHITRANYA store</Text>
+          {!!dataError && <Text style={styles.dataError}>{dataError}</Text>}
+
+          <View style={styles.metricsGrid}>
+            <View style={styles.metricCard}>
+              <Text style={styles.metricLabel}>TOTAL ORDERS</Text>
+              <Text style={styles.metricValue}>{metrics.orders}</Text>
+              <Text style={styles.metricFoot}>{metrics.pendingOrders} pending</Text>
+            </View>
+            <View style={styles.metricCard}>
+              <Text style={styles.metricLabel}>ORDER VALUE</Text>
+              <Text style={styles.metricValueSmall}>NPR {metrics.orderValue.toLocaleString('en-IN')}</Text>
+              <Text style={styles.metricFoot}>Excludes cancelled orders</Text>
+            </View>
+            <View style={styles.metricCard}>
+              <Text style={styles.metricLabel}>PRODUCTS</Text>
+              <Text style={styles.metricValue}>{metrics.products}</Text>
+              <Text style={styles.metricFoot}>{metrics.lowStock} low stock (5 or less)</Text>
+            </View>
+            <View style={styles.metricCard}>
+              <Text style={styles.metricLabel}>SERVICE BOOKINGS</Text>
+              <Text style={styles.metricValue}>{metrics.bookings}</Text>
+              <Text style={styles.metricFoot}>{metrics.pendingBookings} pending</Text>
+            </View>
+          </View>
+
+          <View style={styles.liveCard}>
+            <View style={styles.liveDot} />
+            <View style={styles.liveCopy}>
+              <Text style={styles.liveTitle}>Firebase connected</Text>
+              <Text style={styles.liveDescription}>Dashboard numbers update automatically when store data changes.</Text>
+            </View>
+          </View>
+          <Text style={styles.accountLabel}>SIGNED IN AS</Text>
+          <Text style={styles.accountEmail}>{user.email}</Text>
+        </ScrollView>
         <Text style={styles.footer}>CHITRANYA · SHOP · SERVICES · SOLUTIONS</Text>
       </SafeAreaView>
     );
@@ -222,6 +290,28 @@ const styles = StyleSheet.create({
   footer: { color: '#98A2B3', fontSize: 9, fontWeight: '700', letterSpacing: 1.4, textAlign: 'center', paddingBottom: 18 },
   loadingScreen: { flex: 1, backgroundColor: '#F4F6FA', alignItems: 'center', justifyContent: 'center' },
   loadingText: { color: '#667085', fontSize: 13, marginTop: 14 },
+
+  dashboardContent: { paddingHorizontal: 20, paddingTop: 28, paddingBottom: 28 },
+  dashboardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 34 },
+  dashboardBrand: { color: '#102A43', fontSize: 20, fontWeight: '900', letterSpacing: 1.8 },
+  dashboardSubtitle: { color: '#F28C28', fontSize: 9, fontWeight: '800', letterSpacing: 2.4, marginTop: 4 },
+  signOutButton: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D9E0E8', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10 },
+  signOutText: { color: '#102A43', fontSize: 12, fontWeight: '800' },
+  greeting: { color: '#14213D', fontSize: 27, fontWeight: '900' },
+  dashboardHint: { color: '#667085', fontSize: 13, marginTop: 6, marginBottom: 22 },
+  dataError: { color: '#B42318', backgroundColor: '#FFF1F0', padding: 12, borderRadius: 10, marginBottom: 14, fontSize: 12 },
+  metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  metricCard: { width: '48%', flexGrow: 1, minHeight: 132, backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#E5EAF0' },
+  metricLabel: { color: '#667085', fontSize: 9, fontWeight: '800', letterSpacing: 0.8 },
+  metricValue: { color: '#102A43', fontSize: 32, fontWeight: '900', marginTop: 12 },
+  metricValueSmall: { color: '#102A43', fontSize: 19, fontWeight: '900', marginTop: 18 },
+  metricFoot: { color: '#667085', fontSize: 10, marginTop: 6 },
+  liveCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#EAF7F0', borderRadius: 14, padding: 16, marginTop: 20 },
+  liveDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#16845B', marginRight: 12 },
+  liveCopy: { flex: 1 },
+  liveTitle: { color: '#126344', fontSize: 13, fontWeight: '800' },
+  liveDescription: { color: '#477563', fontSize: 11, lineHeight: 16, marginTop: 4 },
+  accountLabel: { color: '#98A2B3', fontSize: 9, fontWeight: '800', letterSpacing: 1.2, marginTop: 28 },
   dashboard: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 26 },
   successIcon: { width: 54, height: 54, borderRadius: 27, backgroundColor: '#E7F6EF', alignItems: 'center', justifyContent: 'center', marginTop: 32, marginBottom: 16 },
   successCheck: { color: '#16845B', fontSize: 28, fontWeight: '800' },
