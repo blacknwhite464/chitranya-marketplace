@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useCart, type CartProduct } from "@/context/CartContext";\nimport { useSiteContent } from "@/lib/siteContent";
+import { useCart, type CartProduct } from "@/context/CartContext";
+import { useSiteContent } from "@/lib/siteContent";
 
 const electronics = [
   { name: "Television & Smart TV", image: "photo-1593359677879-a4bb92f829d1", description: "Smart entertainment for every room." },
@@ -73,7 +74,8 @@ type HomeProduct = CartProduct & {
 };
 
 export default function Home() {
-  const { itemCount, addToCart } = useCart();\n  const content = useSiteContent();
+  const { itemCount, addToCart } = useCart();
+  const content = useSiteContent();
   const [liveProducts, setLiveProducts] = useState<HomeProduct[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [addedProductId, setAddedProductId] = useState<number | null>(null);
