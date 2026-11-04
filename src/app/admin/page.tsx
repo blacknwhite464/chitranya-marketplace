@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { collection, onSnapshot, orderBy, query, doc, updateDoc } from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
 
@@ -80,7 +80,7 @@ export default function AdminDashboardPage() {
 
   async function changeStatus(orderId: string, status: string) {
     try {
-      await updateDoc(doc(db, "orders", orderId), { status });
+      await updateDoc(doc(db, "orders", orderId), { status, statusUpdatedAt: serverTimestamp() });
     } catch (updateError) {
       console.error("Could not update order:", updateError);
       setError("Could not update this order. Please try again.");
@@ -136,7 +136,7 @@ export default function AdminDashboardPage() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div><p className="font-black text-slate-900">{order.orderId || order.id}</p><p className="mt-1 text-sm text-slate-500">{order.createdAt?.toDate ? order.createdAt.toDate().toLocaleString() : "Date unavailable"}</p></div>
                   <select aria-label="Order status" value={order.status || "Pending"} onChange={(event) => void changeStatus(order.id, event.target.value)} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800">
-                    {["Pending", "Processing", "Shipped", "Delivered", "Cancelled"].map((status) => <option key={status} value={status}>{status}</option>)}
+                    {["Pending", "Confirmed", "Processing", "Shipped", "Delivered", "Cancelled"].map((status) => <option key={status} value={status}>{status}</option>)}
                   </select>
                 </div>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
