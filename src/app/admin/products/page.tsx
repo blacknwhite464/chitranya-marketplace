@@ -23,6 +23,7 @@ type Product = {
   category: string;
   price: number;
   emoji: string;
+  imageUrl?: string;
   description: string;
   specifications: string[];
   stock: number;
@@ -40,6 +41,7 @@ const emptyForm = {
   specifications: "",
   stock: "10",
   active: true,
+  imageUrl: "",
 };
 
 const money = (value: number) => "NPR " + value.toLocaleString("en-IN");
@@ -53,6 +55,8 @@ export default function AdminProductsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState("");
 
   useEffect(() => {
     let unsubscribeProducts: (() => void) | undefined;
@@ -78,7 +82,8 @@ export default function AdminProductsPage() {
               mainCategory: typeof data.mainCategory === "string" ? data.mainCategory : undefined,
               subCategory: typeof data.subCategory === "string" ? data.subCategory : undefined,
               price: Number(data.price ?? 0),
-              emoji: String(data.emoji ?? "📦"),
+              emoji: String(data.emoji ?? ""),
+              imageUrl: String(data.imageUrl ?? ""),
               description: String(data.description ?? ""),
               specifications: Array.isArray(data.specifications) ? data.specifications : [],
               stock: Number(data.stock ?? 0),
@@ -104,6 +109,8 @@ export default function AdminProductsPage() {
 
   function resetForm() {
     setForm(emptyForm);
+    setSelectedImage(null);
+    setImagePreview("");
     setEditingDocId(null);
   }
 
@@ -114,11 +121,14 @@ export default function AdminProductsPage() {
       category: product.category,
       price: String(product.price),
       emoji: product.emoji,
+      imageUrl: product.imageUrl ?? "",
       description: product.description,
       specifications: product.specifications.join("\n"),
       stock: String(product.stock),
       active: product.active,
     });
+    setSelectedImage(null);
+    setImagePreview(product.imageUrl ?? "");
     setMessage("");
     setError("");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -136,12 +146,39 @@ export default function AdminProductsPage() {
       return;
     }
 
+    if (selectedImage && (!selectedImage.type.startsWith("image/") || selectedImage.size > 5 * 1024 * 1024)) {
+      setError("Choose an image file smaller than 5 MB.");
+      return;
+    }
+
     setSaving(true);
+    let imageUrl = form.imageUrl;
+    try {
+      if (selectedImage) {
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+        if (!cloudName || !uploadPreset) throw new Error("Cloudinary is not configured. Add the cloud name and unsigned upload preset to .env.local.");
+        const uploadData = new FormData();
+        uploadData.append("file", selectedImage);
+        uploadData.append("upload_preset", uploadPreset);
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: "POST", body: uploadData });
+        const result = await response.json();
+        if (!response.ok || !result.secure_url) throw new Error(result.error?.message || "Image upload failed.");
+        imageUrl = result.secure_url;
+      }
+    } catch (uploadError) {
+      console.error(uploadError);
+      setError(uploadError instanceof Error ? uploadError.message : "Could not upload product photo.");
+      setSaving(false);
+      return;
+    }
+
     const productData = {
       name: form.name.trim(),
       category: form.category,
       price,
-      emoji: form.emoji.trim() || "📦",
+      emoji: "",
+      imageUrl,
       description: form.description.trim(),
       specifications: form.specifications.split("\n").map((line) => line.trim()).filter(Boolean),
       stock,
@@ -231,9 +268,17 @@ export default function AdminProductsPage() {
               </label>
             </div>
 
-            <label className="block text-sm font-semibold text-slate-700">Emoji
-              <input value={form.emoji} onChange={(event) => setForm({ ...form, emoji: event.target.value })} className="mt-1 w-full rounded-lg border px-3 py-2" placeholder="📺" />
-            </label>
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-slate-700">Product photo (JPG, PNG or WebP · max 5 MB)
+                <input type="file" accept="image/*" onChange={(event) => {
+                  const file = event.target.files?.[0] ?? null;
+                  setSelectedImage(file);
+                  if (file) setImagePreview(URL.createObjectURL(file));
+                }} className="mt-1 block w-full rounded-lg border bg-white px-3 py-2 text-sm" />
+              </label>
+              {imagePreview && <div className="flex items-center gap-3"><img src={imagePreview} alt="Product preview" className="h-24 w-24 rounded-lg border object-contain" /><button type="button" onClick={() => { setSelectedImage(null); setImagePreview(""); setForm({ ...form, imageUrl: "" }); }} className="text-sm font-semibold text-red-600">Remove photo</button></div>}
+              <p className="text-xs text-slate-500">Upload a clear product photo. It will appear on the shop and product details page.</p>
+            </div>
 
             <label className="block text-sm font-semibold text-slate-700">Description
               <textarea required rows={3} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} className="mt-1 w-full rounded-lg border px-3 py-2" placeholder="Describe this product" />
@@ -270,7 +315,7 @@ export default function AdminProductsPage() {
               {products.map((product) => (
                 <article key={product.docId} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-4 shadow-sm">
                   <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-3xl">{product.emoji}</span>
+                    {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-14 w-14 shrink-0 rounded-xl border bg-white object-contain" /> : <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xs font-bold text-slate-400">NO PHOTO</span>}
                     <div className="min-w-0">
                       <h3 className="truncate font-bold text-slate-900">{product.name}</h3>
                       <p className="text-sm text-slate-500">{product.mainCategory || product.category}{product.subCategory ? " / " + product.subCategory : ""} · {money(product.price)} · Stock: {product.stock}</p>
