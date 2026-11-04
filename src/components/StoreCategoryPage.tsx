@@ -112,14 +112,8 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
     return a.id - b.id;
   }), [products, mainCategory, selectedSubcategory, search, inStockOnly, sortBy]);
 
-  const heading = mainCategory === "All" ? "Explore All Products" : mainCategory === "Home Services" ? "Home Services" : mainCategory;
-  const intro = mainCategory === "All"
-    ? "Browse every product and service category available at CHITRANYA."
-    : mainCategory === "Electronics"
-      ? "Explore electronics, appliances, computers and security products."
-      : mainCategory === "Hardware"
-        ? "Find tools, building materials, fittings and hardware essentials."
-        : "Find trusted services for your home and business.";
+  const heading = mainCategory === "All" ? content.productsTitle : mainCategory === "Electronics" ? content.electronicsPageTitle : mainCategory === "Hardware" ? content.hardwarePageTitle : "Home Services";
+  const intro = mainCategory === "All" ? content.productsDescription : mainCategory === "Electronics" ? content.electronicsPageDescription : mainCategory === "Hardware" ? content.hardwarePageDescription : "Find trusted services for your home and business.";
 
   const isShopCategory = mainCategory === "Electronics" || mainCategory === "Hardware";
   return (
