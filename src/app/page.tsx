@@ -101,8 +101,25 @@ export default function Home() {
   const { itemCount, addToCart } = useCart();
   const content = useSiteContent();
   const [liveProducts, setLiveProducts] = useState<HomeProduct[]>([]);
+  const [homepageCategories, setHomepageCategories] = useState<{ id: string; mainCategory: string; name: string; image: string; description: string }[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [addedProductId, setAddedProductId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const stop = onSnapshot(collection(db, "categories"), (snapshot) => {
+      const rows = snapshot.docs.flatMap((entry) => {
+        const data = entry.data();
+        const mainCategory = String(data.mainCategory ?? "");
+        const name = String(data.name ?? "");
+        if (!name || !["Electronics", "Hardware"].includes(mainCategory) || data.active === false || data.showOnHomepage === false) return [];
+        const presets = mainCategory === "Electronics" ? electronics : hardware;
+        const preset = presets.find((item) => item.name.toLowerCase() === name.toLowerCase());
+        return [{ id: entry.id, mainCategory, name, image: preset?.image ?? (mainCategory === "Electronics" ? "photo-1498049794561-7780e7231661" : "photo-1504148455328-c376907d081c"), description: preset?.description ?? "Explore quality products and essentials at CHITRANYA." }];
+      });
+      setHomepageCategories(rows.sort((a, b) => a.name.localeCompare(b.name)));
+    }, (error) => console.error("Homepage categories could not be loaded:", error));
+    return () => stop();
+  }, []);
 
   useEffect(() => {
     const stop = onSnapshot(collection(db, "products"), (snapshot) => {
@@ -248,7 +265,7 @@ export default function Home() {
           <Link href="/electronics/" className="rounded-lg border border-blue-900 px-5 py-3 text-sm font-extrabold text-blue-900 hover:bg-blue-950 hover:text-white">View all electronics</Link>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {electronics.map((item) => <CategoryCard key={item.name} item={item} href={`/electronics/?category=${encodeURIComponent(item.name)}`} />)}
+          {homepageCategories.filter((item) => item.mainCategory === "Electronics").map((item) => <CategoryCard key={item.id} item={item} href={`/electronics/?category=${encodeURIComponent(item.name)}`} />)}
         </div>
       </section>
 
@@ -259,7 +276,7 @@ export default function Home() {
             <Link href="/hardware/" className="rounded-lg border border-orange-600 px-5 py-3 text-sm font-extrabold text-orange-700 hover:bg-orange-600 hover:text-white">View all hardware</Link>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {hardware.map((item) => <CategoryCard key={item.name} item={item} href={`/hardware/?category=${encodeURIComponent(item.name)}`} accent="orange" />)}
+            {homepageCategories.filter((item) => item.mainCategory === "Hardware").map((item) => <CategoryCard key={item.id} item={item} href={`/hardware/?category=${encodeURIComponent(item.name)}`} accent="orange" />)}
           </div>
         </div>
       </section>
