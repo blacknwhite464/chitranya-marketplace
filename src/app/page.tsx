@@ -10,18 +10,18 @@ const electronics = [
   { name: "Kitchen Appliances", image: "photo-1556911220-bff31c812dba", description: "Practical appliances for your kitchen." },
   { name: "Computers & Accessories", image: "photo-1498049794561-7780e7231661", description: "Technology for work, study and play." },
   { name: "CCTV & Security", image: "photo-1558002038-1055907df827", description: "Security solutions for peace of mind." },
-  { name: "Fans, Lights & Electrical", image: "photo-150 carve", description: "Lighting and electrical essentials." },
+  { name: "Fans, Lights & Electrical", image: "photo-1507473885765-e6ed057f782c", description: "Lighting and electrical essentials." },
 ];
 
 const hardware = [
-  { name: "Hand Tools", image: "photo-158工具", description: "Reliable tools for everyday jobs." },
+  { name: "Hand Tools", image: "photo-1581244277943-fe4a9c777189", description: "Reliable tools for everyday jobs." },
   { name: "Power Tools", image: "photo-1504148455328-c376907d081c", description: "Get more done with the right equipment." },
   { name: "Plumbing Materials", image: "photo-1607472586893-edb57bdc0e39", description: "Pipes, fittings and water system essentials." },
   { name: "Electrical Accessories", image: "photo-1621905251189-08b45d6a269e", description: "Quality electrical fittings and supplies." },
   { name: "Paint & Painting", image: "photo-1562259949-e8e7689d7828", description: "Finishing touches for every space." },
   { name: "Construction Materials", image: "photo-1503387762-592deb58ef4e", description: "Materials for building and renovation." },
   { name: "Bathroom Fittings", image: "photo-1620626011761-996317b8d101", description: "Fixtures for modern bathrooms." },
-  { name: "Safety Equipment", image: "photo- safety", description: "Protective essentials for every project." },
+  { name: "Safety Equipment", image: "photo-1504307651254-35680f356dfd", description: "Protective essentials for every project." },
 ];
 
 const services = [
@@ -34,7 +34,7 @@ const services = [
   { name: "Painting & Wall Finishing", description: "Interior and exterior painting, touch-ups and surface preparation.", image: "photo-1562259949-e8e7689d7828" },
   { name: "Home Renovation", description: "Room upgrades, repairs, remodeling and improvement projects.", image: "photo-1600607687939-ce8a6c25118c" },
   { name: "Hardware Installation", description: "Shelves, fittings, fixtures, locks and other hardware installation.", image: "photo-1504148455328-c376907d081c" },
-  { name: "Carpentry & Furniture", description: "Door repairs, cabinet fitting, furniture assembly and woodwork.", image: "photo- woodworking" },
+  { name: "Carpentry & Furniture", description: "Door repairs, cabinet fitting, furniture assembly and woodwork.", image: "photo-1530124566582-a618bc2615dc" },
   { name: "Bathroom & Kitchen Fitting", description: "Sanitaryware, taps, sinks, showers and kitchen fixture installation.", image: "photo-1620626011761-996317b8d101" },
   { name: "TV & Wall Mounting", description: "Television mounting, bracket fitting and cable management.", image: "photo-1593359677879-a4bb92f829d1" },
   { name: "Office Maintenance", description: "Routine repairs and maintenance for shops, offices and workplaces.", image: "photo-1497366754035-f200968a6e72" },
