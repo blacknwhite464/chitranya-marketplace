@@ -28,25 +28,35 @@ export default function AdminCategoriesPage() {
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
+    let stopCategories: (() => void) | undefined;
     const stopAuth = onAuthStateChanged(auth, (user) => {
+      stopCategories?.();
+      stopCategories = undefined;
+
       if (!user || user.uid !== ADMIN_UID) {
         if (user) void signOut(auth);
+        setItems([]);
         router.replace("/admin/login/");
         setChecking(false);
-      } else {
-        setChecking(false);
+        return;
       }
+
+      setChecking(false);
+      stopCategories = onSnapshot(collection(db, "categories"), (snapshot) => {
+        setItems(snapshot.docs.map((entry) => {
+          const data = entry.data();
+          return { id: entry.id, mainCategory: String(data.mainCategory ?? ""), name: String(data.name ?? ""), active: data.active !== false };
+        }).filter((item) => MAIN_CATEGORIES.includes(item.mainCategory as typeof MAIN_CATEGORIES[number])));
+      }, (err) => {
+        console.error(err);
+        setError("Could not load categories. Check that your Firestore rules allow the administrator to read the categories collection.");
+      });
     });
-    const stopCategories = onSnapshot(collection(db, "categories"), (snapshot) => {
-      setItems(snapshot.docs.map((entry) => {
-        const data = entry.data();
-        return { id: entry.id, mainCategory: String(data.mainCategory ?? ""), name: String(data.name ?? ""), active: data.active !== false };
-      }).filter((item) => MAIN_CATEGORIES.includes(item.mainCategory as typeof MAIN_CATEGORIES[number])));
-    }, (err) => {
-      console.error(err);
-      setError("Could not load categories. Check that your Firestore rules allow the administrator to read the categories collection.");
-    });
-    return () => { stopAuth(); stopCategories(); };
+
+    return () => {
+      stopAuth();
+      stopCategories?.();
+    };
   }, [router]);
 
   const grouped = useMemo(() => MAIN_CATEGORIES.map((main) => ({
