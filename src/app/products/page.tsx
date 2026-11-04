@@ -19,7 +19,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All");
+  const [category, setCategory] = useState("All");\n  const [subCategory, setSubCategory] = useState("All");\n  const [subcategories, setSubcategories] = useState<{ mainCategory: string; name: string }[]>([]);
   const [addedProductId, setAddedProductId] = useState<number | null>(null);
   const { addToCart, itemCount } = useCart();
 
@@ -73,7 +73,7 @@ export default function ProductsPage() {
       const matchesCategory = category === "All" || product.category === category;
       return matchesSearch && matchesCategory;
     });
-  }, [products, search, category]);
+  }, [products, search, category, subCategory]);
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -127,7 +127,7 @@ export default function ProductsPage() {
             <option value="All">All Categories</option>
             <option value="Electronics">Electronics</option>
             <option value="Hardware">Hardware</option>
-            <option value="Services">Services</option>
+            <option value="Home Services">Home Services</option>
           </select>
         </div>
 
