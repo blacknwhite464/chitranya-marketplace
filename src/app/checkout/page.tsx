@@ -47,7 +47,7 @@ export default function CheckoutPage() {
         name: item.name,
         category: item.category,
         price: item.price,
-        emoji: item.emoji,
+        imageUrl: item.imageUrl ?? "",
         quantity: item.quantity,
       })),
       itemCount,
