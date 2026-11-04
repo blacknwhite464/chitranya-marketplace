@@ -195,7 +195,9 @@ export default function AdminProductsPage() {
           </div>
           <div className="flex flex-wrap gap-3">
             <Link href="/admin/" className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold hover:bg-slate-800">Orders Dashboard</Link>
-            <button onClick={async () => { await signOut(auth); router.replace("/admin/login/index.html"); }} className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold hover:bg-slate-800">Sign out</button>
+            <Link href="/admin/categories/" className="rounded-lg border border-orange-500 px-4 py-2 text-sm font-semibold text-orange-300 hover:bg-slate-800">Manage Categories</Link>
+            <Link href="/" className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold hover:bg-slate-800">View Store</Link>
+            <button onClick={async () => { await signOut(auth); router.replace("/admin/login/"); }} className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold hover:bg-slate-800">Sign out</button>
           </div>
         </div>
       </header>
