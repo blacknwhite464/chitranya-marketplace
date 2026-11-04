@@ -67,6 +67,7 @@ function CategoryCard({ item, href, accent = "blue" }: { item: { name: string; i
 }
 
 type HomeProduct = CartProduct & {
+  stock: number;
   subCategory: string;
   description: string;
 };
