@@ -153,6 +153,7 @@ export default function Home() {
         <nav className="mx-auto flex max-w-[1440px] items-center gap-7 overflow-x-auto border-t border-slate-100 px-4 py-3 text-sm font-bold text-slate-700 md:px-6">
           <Link href="/" className="whitespace-nowrap text-orange-600">Home</Link>
           <Link href="/products/" className="whitespace-nowrap hover:text-orange-600">Shop All</Link>
+          <Link href="/quotation/" className="whitespace-nowrap hover:text-orange-600">Build a Quotation</Link>
           <Link href="/electronics/" className="whitespace-nowrap hover:text-orange-600">Electronics</Link>
           <Link href="/hardware/" className="whitespace-nowrap hover:text-orange-600">Hardware & Tools</Link>
           <Link href="/services/" className="whitespace-nowrap hover:text-orange-600">Home Services</Link>
