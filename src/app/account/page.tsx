@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, signOut, updateProfile, type User } from "firebase/auth";
-import { collection, onSnapshot, query, where, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 
 type HistoryItem = { id: string; orderId?: string; customerName?: string; total?: number; status?: string; createdAt?: { toDate?: () => Date }; service?: string; preferredDate?: string; preferredTime?: string; address?: string; city?: string; items?: { name: string; quantity: number }[] };
@@ -26,8 +26,8 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (!user) { setOrders([]); setBookings([]); return; }
-    const stopOrders = onSnapshot(query(collection(db, "orders"), where("userId", "==", user.uid), orderBy("createdAt", "desc")), (snap) => setOrders(snap.docs.map((d) => ({ id: d.id, ...d.data() } as HistoryItem))), (err) => { console.error(err); setError("Could not load order history. Please check Firestore security rules and indexes."); });
-    const stopBookings = onSnapshot(query(collection(db, "serviceBookings"), where("userId", "==", user.uid), orderBy("createdAt", "desc")), (snap) => setBookings(snap.docs.map((d) => ({ id: d.id, ...d.data() } as HistoryItem))), (err) => { console.error(err); setError("Could not load service history. Please check Firestore security rules and indexes."); });
+    const stopOrders = onSnapshot(query(collection(db, "orders"), where("userId", "==", user.uid)), (snap) => setOrders(snap.docs.map((d) => ({ id: d.id, ...d.data() } as HistoryItem)).sort((a, b) => (b.createdAt?.toDate?.().getTime() || 0) - (a.createdAt?.toDate?.().getTime() || 0))), (err) => { console.error(err); setError("Could not load order history. Please check Firestore security rules and indexes."); });
+    const stopBookings = onSnapshot(query(collection(db, "serviceBookings"), where("userId", "==", user.uid)), (snap) => setBookings(snap.docs.map((d) => ({ id: d.id, ...d.data() } as HistoryItem)).sort((a, b) => (b.createdAt?.toDate?.().getTime() || 0) - (a.createdAt?.toDate?.().getTime() || 0))), (err) => { console.error(err); setError("Could not load service history. Please check Firestore security rules and indexes."); });
     return () => { stopOrders(); stopBookings(); };
   }, [user]);
 
@@ -38,6 +38,7 @@ export default function AccountPage() {
         if (password.length < 6) throw new Error("Password must contain at least 6 characters.");
         const result = await createUserWithEmailAndPassword(auth, email.trim(), password);
         await updateProfile(result.user, { displayName: name.trim() });
+        setUser(result.user);
         await sendEmailVerification(result.user);
         setMessage("Account created. A verification email has been sent. You can now use your CHITRANYA account.");
         setPassword("");
