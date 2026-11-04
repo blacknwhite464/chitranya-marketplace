@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useCart } from "@/context/CartContext";\nimport { useSiteContent } from "@/lib/siteContent";
+import { useCart } from "@/context/CartContext";
+import { useSiteContent } from "@/lib/siteContent";
 
 type StoreProduct = {
   id: number;
@@ -27,7 +28,8 @@ export default function ProductDetailsClient({ id }: { id: string }) {
   const [loadError, setLoadError] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
-  const { addToCart, itemCount } = useCart();\n  const content = useSiteContent();
+  const { addToCart, itemCount } = useCart();
+  const content = useSiteContent();
 
   useEffect(() => {
     if (!id) return;
