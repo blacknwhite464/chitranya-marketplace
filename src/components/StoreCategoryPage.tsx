@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useCart, type CartProduct } from "@/context/CartContext";
+import { useCart, type CartProduct } from "@/context/CartContext";\nimport { useSiteContent } from "@/lib/siteContent";
 
 type MainCategory = "Electronics" | "Hardware" | "Home Services";
 type Subcategory = { id: string; mainCategory: MainCategory; name: string; active: boolean };
@@ -38,7 +38,7 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [addedId, setAddedId] = useState<number | null>(null);
-  const { addToCart, itemCount } = useCart();
+  const { addToCart, itemCount } = useCart();\n  const content = useSiteContent();
 
   useEffect(() => {
     const stopProducts = onSnapshot(collection(db, "products"), (snapshot) => {
@@ -122,7 +122,7 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
   const isShopCategory = mainCategory === "Electronics" || mainCategory === "Hardware";
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-      <div className="bg-slate-950 px-4 py-2 text-center text-xs font-bold text-white">CHITRANYA | ELECTRONICS | HARDWARE | HOME SOLUTIONS</div>
+      <div className="bg-slate-950 px-4 py-2 text-center text-xs font-bold text-white">{content.announcement}</div>
       <header className="sticky top-0 z-40 border-b bg-white shadow-sm">
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-4 px-4 py-4">
           <Link href="/" className="text-2xl font-black text-blue-950">CHITRANYA<span className="text-orange-500">.</span></Link>
@@ -181,7 +181,7 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
           </div>
         </div>
       </section>
-      <footer className="mt-10 bg-slate-950 px-6 py-9 text-center text-sm text-slate-400">Â© {new Date().getFullYear()} CHITRANYA. All rights reserved.</footer>
+      <footer className="mt-10 bg-slate-950 px-6 py-9 text-center text-sm text-slate-400">Â© {new Date().getFullYear()} {content.footerText}</footer>
     </main>
   );
 
