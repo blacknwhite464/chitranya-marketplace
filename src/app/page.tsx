@@ -196,19 +196,19 @@ export default function Home() {
               <article key={product.id} className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
                 <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-slate-50 p-6">
                   {product.imageUrl ? (
-                    <img src={product.imageUrl} alt={product.name} loading="lazy" className="h-full w-full object-contain transition duration-300 group-hover:scale-105" />
+                    <Link href={"/products/" + product.id + "/"} aria-label={"View " + product.name} className="flex h-full w-full items-center justify-center"><img src={product.imageUrl} alt={product.name} loading="lazy" className="h-full w-full object-contain transition duration-300 group-hover:scale-105" /></Link>
                   ) : (
-                    <span className="text-sm font-extrabold tracking-widest text-slate-400">CHITRANYA</span>
+                    <Link href={"/products/" + product.id + "/"} className="text-sm font-extrabold tracking-widest text-slate-400">CHITRANYA</Link>
                   )}
                   <span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-[10px] font-extrabold uppercase text-blue-900 shadow">{product.category}</span>
                   <span className={product.stock > 0 ? "absolute right-3 top-3 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700" : "absolute right-3 top-3 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-600"}>{product.stock > 0 ? "In stock" : "Out of stock"}</span>
                 </div>
                 <div className="flex flex-1 flex-col p-5">
                   <p className="text-[11px] font-bold uppercase text-slate-400">{product.subCategory || product.category}</p>
-                  <h3 className="mt-2 min-h-12 line-clamp-2 font-extrabold text-slate-900">{product.name}</h3>
+                  <h3 className="mt-2 min-h-12 line-clamp-2 font-extrabold text-slate-900"><Link href={"/products/" + product.id + "/"} className="transition hover:text-orange-600">{product.name}</Link></h3>
                   <p className="mt-2 min-h-10 line-clamp-2 text-sm leading-5 text-slate-500">{product.description}</p>
                   <p className="mt-4 text-2xl font-black text-blue-950">NPR {product.price.toLocaleString("en-IN")}</p>
-                  <Link href={product.subCategory ? "/products/?category=" + encodeURIComponent(product.subCategory) : "/products/"} className="mt-4 block rounded-xl border border-slate-200 px-4 py-3 text-center text-sm font-bold text-blue-950 hover:bg-blue-50">Explore category</Link>
+                  <Link href={"/products/" + product.id + "/"} className="mt-4 block rounded-xl border border-slate-200 px-4 py-3 text-center text-sm font-bold text-blue-950 hover:bg-blue-50">View Product Details</Link>{product.subCategory && <Link href={"/" + (product.category.toLowerCase() === "hardware" ? "hardware" : "electronics") + "/?category=" + encodeURIComponent(product.subCategory)} className="mt-2 text-center text-xs font-bold text-slate-500 hover:text-orange-600">More in {product.subCategory}</Link>}
                   <button onClick={() => { addToCart(product); setAddedProductId(product.id); }} disabled={product.stock <= 0} className="mt-2 w-full rounded-xl bg-orange-500 px-4 py-3 text-sm font-extrabold text-white transition hover:bg-orange-600 disabled:bg-slate-300">{addedProductId === product.id ? "Added to Cart" : product.stock > 0 ? "Add to Cart" : "Out of Stock"}</button>
                 </div>
               </article>
