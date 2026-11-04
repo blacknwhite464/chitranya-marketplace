@@ -301,11 +301,6 @@ const styles = StyleSheet.create({
   loadingScreen: { flex: 1, backgroundColor: '#F4F6FA', alignItems: 'center', justifyContent: 'center' },
   loadingText: { color: '#667085', fontSize: 13, marginTop: 14 },
 
-  dashboardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 20, paddingBottom: 12 },
-  dashboardBrand: { color: '#102A43', fontSize: 20, fontWeight: '900', letterSpacing: 1.8 },
-  dashboardSubtitle: { color: '#F28C28', fontSize: 9, fontWeight: '800', letterSpacing: 2.4, marginTop: 4 },
-  signOutButton: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D9E0E8', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10 },
-  signOutText: { color: '#102A43', fontSize: 12, fontWeight: '800' },
   tabBar: { flexDirection: 'row', backgroundColor: '#FFFFFF', marginHorizontal: 20, borderRadius: 12, padding: 4, marginBottom: 8 },
   tabButton: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 9 },
   activeTabButton: { backgroundColor: '#102A43' }, tabText: { color: '#667085', fontSize: 13, fontWeight: '800' }, activeTabText: { color: '#FFFFFF' },
