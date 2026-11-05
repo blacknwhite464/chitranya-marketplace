@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, signOut, updateProfile, type User } from "firebase/auth";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { collection, deleteDoc, doc, onSnapshot, query, where } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 
 type HistoryItem = { id: string; orderId?: string; quoteId?: string; customerName?: string; total?: number; status?: string; createdAt?: { toDate?: () => Date }; statusUpdatedAt?: { toDate?: () => Date }; service?: string; preferredDate?: string; preferredTime?: string; address?: string; city?: string; items?: { name: string; quantity: number }[] };
@@ -22,6 +22,7 @@ export default function AccountPage() {
   const [orders, setOrders] = useState<HistoryItem[]>([]);
   const [bookings, setBookings] = useState<HistoryItem[]>([]);
   const [quotations, setQuotations] = useState<HistoryItem[]>([]);
+  const [deletingQuoteId, setDeletingQuoteId] = useState<string | null>(null);
 
   useEffect(() => onAuthStateChanged(auth, (current) => { setUser(current); setChecking(false); }), []);
 
@@ -32,6 +33,21 @@ export default function AccountPage() {
     const stopQuotations = onSnapshot(query(collection(db, "quotations"), where("userId", "==", user.uid)), (snap) => setQuotations(snap.docs.map((d) => ({ id: d.id, ...d.data() } as HistoryItem)).sort((a, b) => (b.createdAt?.toDate?.()?.getTime() || 0) - (a.createdAt?.toDate?.()?.getTime() || 0))), (err) => { console.error(err); setError("Could not load quotation tracking. Please check Firestore security rules."); });
     return () => { stopOrders(); stopBookings(); stopQuotations(); };
   }, [user]);
+
+  async function deleteQuotation(quote: HistoryItem) {
+    const reference = quote.quoteId || quote.id;
+    if (!window.confirm(`Delete quotation ${reference}? This cannot be undone.`)) return;
+    setError(""); setMessage(""); setDeletingQuoteId(quote.id);
+    try {
+      await deleteDoc(doc(db, "quotations", quote.id));
+      setMessage("Quotation " + reference + " has been deleted.");
+    } catch (err) {
+      console.error(err);
+      setError("Could not delete this quotation. Please refresh and try again.");
+    } finally {
+      setDeletingQuoteId(null);
+    }
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError(""); setMessage(""); setBusy(true);
@@ -117,7 +133,10 @@ export default function AccountPage() {
               return <article key={quote.id} className="rounded-xl border border-slate-200 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div><p className="text-xs font-bold uppercase tracking-wider text-slate-500">Quotation reference</p><p className="mt-1 font-black text-blue-950">{quote.quoteId || quote.id}</p><p className="mt-1 text-xs text-slate-500">Submitted: {dateText(quote.createdAt)}</p></div>
-                  <span className={`rounded-full px-3 py-1.5 text-xs font-bold ${rejected ? "bg-red-50 text-red-700" : current === "Converted to Order" ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-800"}`}>{current}</span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={`rounded-full px-3 py-1.5 text-xs font-bold ${rejected ? "bg-red-50 text-red-700" : current === "Converted to Order" ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-800"}`}>{current}</span>
+                    <button type="button" onClick={() => void deleteQuotation(quote)} disabled={deletingQuoteId === quote.id} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50">{deletingQuoteId === quote.id ? "Deleting..." : "Delete quotation"}</button>
+                  </div>
                 </div>
                 {rejected ? <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">This quotation was declined. Please contact CHITRANYA if you would like to discuss another option.</p> : <div className="mt-5">
                   <div className="grid grid-cols-4 gap-1">{steps.map((step, index) => <div key={step} className="min-w-0 text-center"><div className={`mx-auto h-3 w-3 rounded-full ${currentIndex >= index ? "bg-orange-500" : "bg-slate-200"}`}/><p className={`mt-2 text-[10px] font-semibold sm:text-xs ${currentIndex >= index ? "text-slate-900" : "text-slate-400"}`}>{step}</p></div>)}</div>
