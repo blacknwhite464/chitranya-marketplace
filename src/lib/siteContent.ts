@@ -21,6 +21,7 @@ export const SITE_CONTENT_DEFAULTS: Record<string, string> = {
   bestSellersTitle: "Best Sellers",
   bestSellersDescription: "Our featured customer favourites, selected by the CHITRANYA team.",
   homeBestSellersEnabled: "true",
+  homeCustomSectionsJson: "[]",
   electronicsTitle: "Electronics",
   electronicsDescription: "Technology and appliances for modern living.",
   homeElectronicsEnabled: "true",
