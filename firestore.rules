@@ -43,6 +43,12 @@ service cloud.firestore {
           'quoteId','customerName','phone','email','notes','items',
           'itemCount','subtotal','discountTotal','total','status','createdAt'
         ])
+        && request.resource.data.keys().hasOnly([
+          'quoteId','customerName','phone','email','notes','items',
+          'itemCount','subtotal','discountTotal','total','status','createdAt','userId'
+        ])
+        && (!('userId' in request.resource.data)
+          || (request.auth != null && request.resource.data.userId == request.auth.uid))
         && request.resource.data.customerName is string
         && request.resource.data.customerName.size() > 0
         && request.resource.data.customerName.size() <= 100
@@ -66,7 +72,7 @@ service cloud.firestore {
         && request.resource.data.total >= 0
         && request.resource.data.status == 'Pending'
         && request.resource.data.createdAt == request.time;
-      allow read: if isAdmin();
+      allow read: if isAdmin() || belongsToSignedInCustomer(resource.data);
       allow update: if isAdmin();
       allow delete: if false;
     }
