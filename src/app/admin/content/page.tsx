@@ -19,7 +19,7 @@ const groups = [
     ["featuredEyebrow", "Featured products small heading"], ["featuredTitle", "Featured products title"], ["featuredDescription", "Featured products description"],
     ["electronicsTitle", "Electronics section title"], ["electronicsDescription", "Electronics section description"],
     ["hardwareTitle", "Hardware section title"], ["hardwareDescription", "Hardware section description"],
-    ["servicesTitle", "Home services section title"], ["servicesDescription", "Home services section description"],
+    ["servicesTitle", "Home services section title"], ["servicesDescription", "Home services section description"], ["homeServicesEnabled", "Show Home Services section on homepage"],
   ]},
   { title: "Shop all products page", description: "Heading and introduction above the product catalogue.", fields: [
     ["productsTitle", "Page title"], ["productsDescription", "Page description"],
@@ -104,7 +104,7 @@ export default function AdminContentPage() {
         <div className="mb-5"><h2 className="text-xl font-black">{group.title}</h2><p className="mt-1 text-sm text-slate-500">{group.description}</p></div>
         <div className="grid gap-5 md:grid-cols-2">
           {group.fields.map(([key, label]) => <label key={key} className="block text-sm font-bold text-slate-700">{label}
-            {key === "adminContactEnabled" ? <input type="checkbox" checked={values[key] !== "false"} onChange={(event) => change(key, event.target.checked ? "true" : "false")} className="ml-3 h-5 w-5 accent-orange-500" /> : key.toLowerCase().includes("description") || key.toLowerCase().includes("introduction") || key.toLowerCase().includes("title") || key === "announcement" || key === "footerText" ? <textarea rows={key.toLowerCase().includes("description") || key.toLowerCase().includes("introduction") || key === "footerText" ? 5 : 2} value={values[key] ?? ""} onChange={(event) => change(key, event.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-orange-500" /> : <input value={values[key] ?? ""} onChange={(event) => change(key, event.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-orange-500" />}
+            {(key === "adminContactEnabled" || key === "homeServicesEnabled") ? <input type="checkbox" checked={values[key] !== "false"} onChange={(event) => change(key, event.target.checked ? "true" : "false")} className="ml-3 h-5 w-5 accent-orange-500" /> : key.toLowerCase().includes("description") || key.toLowerCase().includes("introduction") || key.toLowerCase().includes("title") || key === "announcement" || key === "footerText" ? <textarea rows={key.toLowerCase().includes("description") || key.toLowerCase().includes("introduction") || key === "footerText" ? 5 : 2} value={values[key] ?? ""} onChange={(event) => change(key, event.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-orange-500" /> : <input value={values[key] ?? ""} onChange={(event) => change(key, event.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-orange-500" />}
           </label>)}
         </div>
       </section>)}
