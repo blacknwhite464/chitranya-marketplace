@@ -173,6 +173,39 @@ export default function Home() {
     return pricingRules[subcategoryRule] ?? pricingRules[product.category] ?? 0;
   };
 
+  const flashSaleProducts = liveProducts
+    .filter((product) => product.stock > 0 && getDiscountPercent(product) > 0)
+    .sort((a, b) => getDiscountPercent(b) - getDiscountPercent(a))
+    .slice(0, 10);
+  const justForYouProducts = liveProducts.filter((product) => product.stock > 0).slice(0, 10);
+
+  const renderHomepageProductCards = (products: HomeProduct[]) => (
+    <div className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      {products.map((product) => {
+        const discount = getDiscountPercent(product);
+        return (
+          <article key={product.id} className="group flex min-w-0 flex-col overflow-hidden rounded-sm border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+            <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-slate-50 p-5">
+              {product.imageUrl ? <Link href={"/product/?id=" + product.id} aria-label={"View " + product.name} className="flex h-full w-full items-center justify-center"><img src={product.imageUrl} alt={product.name} loading="lazy" className="h-full w-full object-contain transition duration-300 group-hover:scale-105" /></Link> : <Link href={"/product/?id=" + product.id} className="text-sm font-extrabold tracking-widest text-slate-400">CHITRANYA</Link>}
+              {discount > 0 && <span className="absolute left-3 top-3 rounded-md bg-red-600 px-2.5 py-1 text-[10px] font-black text-white">{discount}% OFF</span>}
+              <span className={product.stock > 0 ? "absolute right-3 top-3 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700" : "absolute right-3 top-3 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-600"}>{product.stock > 0 ? "In stock" : "Out of stock"}</span>
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col p-3 sm:p-4">
+              <p className="text-[11px] font-bold uppercase text-slate-400">{product.subCategory || product.category}</p>
+              <h3 className="mt-2 min-h-12 line-clamp-2 font-extrabold text-slate-900"><Link href={"/product/?id=" + product.id} className="transition hover:text-orange-600">{product.name}</Link></h3>
+              <div className="mt-3 flex flex-wrap items-baseline gap-2">
+                <p className={discount > 0 ? "text-lg font-black text-red-600 sm:text-xl" : "text-lg font-black text-blue-950 sm:text-xl"}>NPR {Math.round(product.price * (1 - discount / 100)).toLocaleString("en-IN")}</p>
+                {discount > 0 && <p className="text-sm font-semibold text-slate-400 line-through">NPR {product.price.toLocaleString("en-IN")}</p>}
+              </div>
+              <Link href={"/product/?id=" + product.id} className="mt-4 block rounded-xl border border-slate-200 px-3 py-2.5 text-center text-sm font-bold text-blue-950 hover:bg-blue-50">View Product Details</Link>
+              <button onClick={() => { addToCart({ ...product, price: Math.round(product.price * (1 - discount / 100)) }); setAddedProductId(product.id); }} className="mt-2 w-full rounded-xl bg-orange-500 px-3 py-2.5 text-sm font-extrabold text-white transition hover:bg-orange-600">{addedProductId === product.id ? "Added to Cart" : "Add to Cart"}</button>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  );
+
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
       <div className="bg-slate-950 px-4 py-2 text-center text-xs font-semibold tracking-wide text-white">
@@ -294,6 +327,28 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      {content.homeFlashSalesEnabled !== "false" && flashSaleProducts.length > 0 && (
+        <section id="flash-sales" className="bg-red-50 py-12 md:py-16">
+          <div className="mx-auto max-w-[1440px] px-3 md:px-5">
+            <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+              <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-red-600">Limited-time deals</p><h2 className="mt-2 text-3xl font-black text-slate-950 md:text-4xl">{content.flashSalesTitle}</h2><p className="mt-2 text-slate-600">{content.flashSalesDescription}</p></div>
+              <Link href="/products/" className="rounded-lg bg-red-600 px-5 py-3 text-sm font-extrabold text-white hover:bg-red-700">Shop all deals</Link>
+            </div>
+            {renderHomepageProductCards(flashSaleProducts)}
+          </div>
+        </section>
+      )}
+
+      {content.homeJustForYouEnabled !== "false" && justForYouProducts.length > 0 && (
+        <section id="just-for-you" className="mx-auto max-w-[1440px] px-3 py-12 md:px-5 md:py-16">
+          <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+            <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-700">Picked from our catalogue</p><h2 className="mt-2 text-3xl font-black text-slate-950 md:text-4xl">{content.justForYouTitle}</h2><p className="mt-2 text-slate-500">{content.justForYouDescription}</p></div>
+            <Link href="/products/" className="rounded-lg border border-blue-900 px-5 py-3 text-sm font-extrabold text-blue-900 hover:bg-blue-950 hover:text-white">Explore all products</Link>
+          </div>
+          {renderHomepageProductCards(justForYouProducts)}
+        </section>
+      )}
 
       {content.homeElectronicsEnabled !== "false" && (
       <section id="electronics" className="mx-auto max-w-7xl px-5 py-20">
