@@ -95,15 +95,30 @@ type HomeProduct = CartProduct & {
   stock: number;
   subCategory: string;
   description: string;
+  discountMode: string;
+  discountPercent: number;
 };
 
 export default function Home() {
   const { itemCount, addToCart } = useCart();
   const content = useSiteContent();
   const [liveProducts, setLiveProducts] = useState<HomeProduct[]>([]);
+  const [pricingRules, setPricingRules] = useState<Record<string, number>>({});
   const [homepageCategories, setHomepageCategories] = useState<{ id: string; mainCategory: string; name: string; image: string; description: string }[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [addedProductId, setAddedProductId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const stop = onSnapshot(collection(db, "pricingRules"), (snapshot) => {
+      const rules: Record<string, number> = {};
+      snapshot.docs.forEach((entry) => {
+        const percent = Number(entry.data().discountPercent ?? 0);
+        rules[entry.id] = Number.isFinite(percent) ? Math.min(100, Math.max(0, percent)) : 0;
+      });
+      setPricingRules(rules);
+    }, (error) => console.error("Homepage pricing rules could not be loaded:", error));
+    return () => stop();
+  }, []);
 
   useEffect(() => {
     const stop = onSnapshot(collection(db, "categories"), (snapshot) => {
@@ -138,6 +153,8 @@ export default function Home() {
           stock: Number(data.stock ?? 0),
           subCategory: String(data.subCategory ?? ""),
           description: String(data.description ?? ""),
+          discountMode: String(data.discountMode ?? "inherit"),
+          discountPercent: Number(data.discountPercent ?? 0),
         }];
       });
       setLiveProducts(rows.sort((a, b) => a.id - b.id));
@@ -148,6 +165,13 @@ export default function Home() {
     });
     return () => stop();
   }, []);
+
+  const getDiscountPercent = (product: HomeProduct) => {
+    if (product.discountMode === "fixed") return 0;
+    if (product.discountMode === "override") return Math.min(100, Math.max(0, product.discountPercent || 0));
+    const subcategoryRule = "subcategory:" + product.category + "::" + product.subCategory;
+    return pricingRules[subcategoryRule] ?? pricingRules[product.category] ?? 0;
+  };
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
@@ -249,14 +273,20 @@ export default function Home() {
                   )}
                   <span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-[10px] font-extrabold uppercase text-blue-900 shadow">{categoryEmoji(product.subCategory || product.category)} {product.category}</span>
                   <span className={product.stock > 0 ? "absolute right-3 top-3 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700" : "absolute right-3 top-3 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-600"}>{product.stock > 0 ? "In stock" : "Out of stock"}</span>
+                  {getDiscountPercent(product) > 0 && <span className="absolute bottom-3 left-3 rounded-md bg-red-600 px-3 py-1.5 text-xs font-black text-white shadow">{getDiscountPercent(product)}% OFF</span>}
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col p-3 sm:p-4">
                   <p className="text-[11px] font-bold uppercase text-slate-400">{product.subCategory || product.category}</p>
                   <h3 className="mt-2 min-h-12 line-clamp-2 font-extrabold text-slate-900"><Link href={"/product/?id=" + product.id} className="transition hover:text-orange-600">{product.name}</Link></h3>
                   <p className="mt-2 min-h-10 line-clamp-2 text-sm leading-5 text-slate-500">{product.description}</p>
-                  <p className="mt-3 text-lg font-black text-blue-950 sm:text-xl">NPR {product.price.toLocaleString("en-IN")}</p>
+                  <div className="mt-3 flex flex-wrap items-baseline gap-2">
+                    {getDiscountPercent(product) > 0 ? <>
+                      <p className="text-lg font-black text-red-600 sm:text-xl">NPR {Math.round(product.price * (1 - getDiscountPercent(product) / 100)).toLocaleString("en-IN")}</p>
+                      <p className="text-sm font-semibold text-slate-400 line-through">NPR {product.price.toLocaleString("en-IN")}</p>
+                    </> : <p className="text-lg font-black text-blue-950 sm:text-xl">NPR {product.price.toLocaleString("en-IN")}</p>}
+                  </div>
                   <Link href={"/product/?id=" + product.id} className="mt-4 block rounded-xl border border-slate-200 px-4 py-3 text-center text-sm font-bold text-blue-950 hover:bg-blue-50">🔍 View Product Details</Link>{product.subCategory && <Link href={"/" + (product.category.toLowerCase() === "hardware" ? "hardware" : "electronics") + "/?category=" + encodeURIComponent(product.subCategory)} className="mt-2 text-center text-xs font-bold text-slate-500 hover:text-orange-600">More in {product.subCategory}</Link>}
-                  <button onClick={() => { addToCart(product); setAddedProductId(product.id); }} disabled={product.stock <= 0} className="mt-2 w-full rounded-xl bg-orange-500 px-4 py-3 text-sm font-extrabold text-white transition hover:bg-orange-600 disabled:bg-slate-300">{addedProductId === product.id ? "✓ Added to Cart" : product.stock > 0 ? "🛒 Add to Cart" : "Out of Stock"}</button>
+                  <button onClick={() => { const discount = getDiscountPercent(product); addToCart({ ...product, price: Math.round(product.price * (1 - discount / 100)) }); setAddedProductId(product.id); }} disabled={product.stock <= 0} className="mt-2 w-full rounded-xl bg-orange-500 px-4 py-3 text-sm font-extrabold text-white transition hover:bg-orange-600 disabled:bg-slate-300">{addedProductId === product.id ? "✓ Added to Cart" : product.stock > 0 ? "🛒 Add to Cart" : "Out of Stock"}</button>
                 </div>
               </article>
             ))}
