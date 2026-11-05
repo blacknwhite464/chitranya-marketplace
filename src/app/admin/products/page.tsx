@@ -302,7 +302,7 @@ export default function AdminProductsPage() {
 
 
   function downloadImportTemplate() {
-    const csv = "name,category,subcategory,price,unit,stock,description\nExample Smart TV,Electronics,Televisions & Smart TVs,45000,pcs,10,43 inch smart television\nExample Drill Machine,Hardware,Power Tools,6500,pcs,5,Heavy duty drill machine";
+    const csv = "name,category,subcategory,price,unit,availability,description\\nExample Smart TV,Electronics,Televisions & Smart TVs,45000,pcs,Stock,43 inch smart television\\nExample Drill Machine,Hardware,Power Tools,6500,pcs,Out of Stock,Heavy duty drill machine";
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
     const link = document.createElement("a");
     link.href = url; link.download = "chitranya-product-import-template.csv"; link.click();
