@@ -67,6 +67,7 @@ export default function AdminProductsPage() {
   const [showBulkForm, setShowBulkForm] = useState(false);
   const [bulkRows, setBulkRows] = useState<BulkProductForm[]>([emptyBulkProduct(), emptyBulkProduct()]);
   const [bulkSaving, setBulkSaving] = useState(false);
+  const [productSearch, setProductSearch] = useState("");
 
   useEffect(() => {
     let unsubscribeProducts: (() => void) | undefined;
@@ -289,6 +290,13 @@ export default function AdminProductsPage() {
     }
   }
 
+  const filteredProducts = products.filter((product) => {
+    const search = productSearch.trim().toLowerCase();
+    if (!search) return true;
+    return [product.name, product.mainCategory || product.category, product.subCategory || "", String(product.price), product.description]
+      .some((value) => value.toLowerCase().includes(search));
+  });
+
   if (checking) {
     return <main className="flex min-h-screen items-center justify-center bg-slate-950 text-white">Checking admin access...</main>;
   }
@@ -435,11 +443,17 @@ export default function AdminProductsPage() {
               <p className="text-sm text-slate-600">{products.length} products in Firestore</p>
             </div>
           </div>
+          <label className="mb-4 block">
+            <span className="mb-1 block text-sm font-semibold text-slate-700">Search product to edit its rate / price</span>
+            <input type="search" value={productSearch} onChange={(event) => setProductSearch(event.target.value)} placeholder="Search by product name, category, subcategory or current price..." className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-100" />
+          </label>
           {products.length === 0 ? (
             <p className="rounded-2xl bg-white p-6 text-slate-600">No products found. Add your first product using the form.</p>
           ) : (
             <div className="space-y-3">
-              {products.map((product) => (
+              {filteredProducts.length === 0 ? (
+                <p className="rounded-2xl bg-white p-6 text-slate-600">No matching products found. Try another product name or category.</p>
+              ) : filteredProducts.map((product) => (
                 <article key={product.docId} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-4 shadow-sm">
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-slate-50 p-1">{product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full object-contain" /> : <span className="text-center text-[8px] font-black uppercase leading-tight tracking-wide text-blue-950">CHITRANYA<br/><span className="font-semibold text-slate-400">No Product Photo</span></span>}</div>
