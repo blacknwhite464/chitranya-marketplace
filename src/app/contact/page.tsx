@@ -56,7 +56,7 @@ export default function ContactPage() {
               <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-orange-600">Main Admin Contact</p>
               <h2 className="mt-2 text-2xl font-black text-blue-950">Anil Suwal</h2>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-                Hello, I’m Anil Suwal, the main administrative contact at CHITRANYA. I’m here to assist you with your enquiries about our products, stores, and services, and to help connect you with the right team. Please feel free to call, email, or WhatsApp me. Thank you for choosing CHITRANYA.
+                Hello, I’m Anil Suwal, the main administrative contact at CHITRANYA. CHITRANYA is a retail business built to bring electronics, hardware, sanitary products, and practical home solutions together in one place. From everyday hardware and electrical essentials to home appliances, tools, plumbing materials, and home services, our goal is to make it easier for customers to find the products and support they need. Through our stores and online marketplace, we aim to offer helpful service, convenient shopping, and dependable assistance. I’m here to help with your enquiries, coordinate with our branches, and connect you with the right team. Please feel free to call, email, or WhatsApp me. Thank you for being part of CHITRANYA.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <a href="tel:9801364220" className="rounded-lg bg-blue-950 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-900">Call 9801364220</a>
