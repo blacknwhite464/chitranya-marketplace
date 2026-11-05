@@ -94,6 +94,10 @@ export default function AdminProductsPage() {
   const [bulkRows, setBulkRows] = useState<BulkProductForm[]>([emptyBulkProduct(), emptyBulkProduct()]);
   const [bulkSaving, setBulkSaving] = useState(false);
   const [productSearch, setProductSearch] = useState("");
+  const [bulkRateOpen, setBulkRateOpen] = useState<string | null>(null);
+  const [bulkRateSelected, setBulkRateSelected] = useState<Record<string, boolean>>({});
+  const [bulkRateDrafts, setBulkRateDrafts] = useState<Record<string, string>>({});
+  const [bulkRateSaving, setBulkRateSaving] = useState(false);
 
   useEffect(() => {
     let unsubscribeProducts: (() => void) | undefined;
@@ -151,6 +155,46 @@ export default function AdminProductsPage() {
       unsubscribeCategories?.();
     };
   }, [router]);
+
+  async function saveBulkSubcategoryRates(items: Product[]) {
+    const selected = items.filter((product) => bulkRateSelected[product.docId]);
+    if (selected.length === 0) {
+      setError("Select at least one product to update its rate.");
+      return;
+    }
+    const invalid = selected.find((product) => {
+      const value = Number(bulkRateDrafts[product.docId] ?? product.price);
+      return !Number.isFinite(value) || value <= 0;
+    });
+    if (invalid) {
+      setError("Enter a valid rate greater than zero for " + invalid.name + ".");
+      return;
+    }
+    setBulkRateSaving(true);
+    setError("");
+    setMessage("");
+    try {
+      const batch = writeBatch(db);
+      selected.forEach((product) => {
+        batch.update(doc(db, "products", product.docId), {
+          price: Number(bulkRateDrafts[product.docId] ?? product.price),
+        });
+      });
+      await batch.commit();
+      setMessage("Updated rates for " + selected.length + " products in " + (items[0]?.subCategory || "this subcategory") + ".");
+      setBulkRateSelected((old) => {
+        const next = { ...old };
+        selected.forEach((product) => { delete next[product.docId]; });
+        return next;
+      });
+      setBulkRateOpen(null);
+    } catch (rateError) {
+      console.error(rateError);
+      setError("Could not update the selected product rates. Please try again.");
+    } finally {
+      setBulkRateSaving(false);
+    }
+  }
 
   function resetForm() {
     setForm(emptyForm);
@@ -626,10 +670,35 @@ export default function AdminProductsPage() {
                   <div className="space-y-4 p-3 sm:p-4">
                     {group.subgroups.map(([subcategory, items]) => (
                       <section key={subcategory} className="overflow-hidden rounded-xl border border-slate-200">
-                        <div className="flex items-center justify-between gap-2 bg-slate-100 px-3 py-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-100 px-3 py-3">
                           <h3 className="font-bold text-slate-800">{subcategory}</h3>
-                          <span className="text-xs font-semibold text-slate-500">{items.length} products</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-slate-500">{items.length} products</span>
+                            <button type="button" onClick={() => {
+                              const key = group.main + "::" + subcategory;
+                              setBulkRateOpen((current) => current === key ? null : key);
+                              setBulkRateSelected((old) => {
+                                const next = { ...old };
+                                items.forEach((product) => { next[product.docId] = false; });
+                                return next;
+                              });
+                              setBulkRateDrafts((old) => ({ ...old, ...Object.fromEntries(items.map((product) => [product.docId, String(product.price)])) }));
+                            }} className="rounded-lg bg-blue-800 px-3 py-2 text-xs font-bold text-white hover:bg-blue-900">{bulkRateOpen === group.main + "::" + subcategory ? "Close rate editor" : "Bulk edit rates"}</button>
+                          </div>
                         </div>
+                        {bulkRateOpen === group.main + "::" + subcategory && (
+                          <div className="space-y-3 border-b border-blue-100 bg-blue-50 p-3">
+                            <p className="text-xs leading-5 text-blue-900">Select the products you want to change, enter each new selling rate, then save them together.</p>
+                            {items.map((product) => (
+                              <div key={product.docId} className="grid grid-cols-[auto_1fr_125px] items-center gap-2">
+                                <input type="checkbox" checked={Boolean(bulkRateSelected[product.docId])} onChange={(event) => setBulkRateSelected((old) => ({ ...old, [product.docId]: event.target.checked }))} aria-label={"Select " + product.name} className="h-4 w-4" />
+                                <label className="min-w-0 text-xs font-semibold text-slate-700">{product.name}<span className="block font-normal text-slate-500">Current: {money(product.price)}</span></label>
+                                <input type="number" min="1" step="1" value={bulkRateDrafts[product.docId] ?? String(product.price)} onChange={(event) => setBulkRateDrafts((old) => ({ ...old, [product.docId]: event.target.value }))} aria-label={"New rate for " + product.name} className="w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm" />
+                              </div>
+                            ))}
+                            <button type="button" disabled={bulkRateSaving || !items.some((product) => bulkRateSelected[product.docId])} onClick={() => void saveBulkSubcategoryRates(items)} className="w-full rounded-lg bg-green-700 px-4 py-3 text-sm font-bold text-white disabled:opacity-50">{bulkRateSaving ? "Saving rates..." : "Save selected product rates"}</button>
+                          </div>
+                        )}
                         <div className="space-y-2 p-2">
                           {items.map((product) => (
                             <article key={product.docId} className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-slate-50 p-3">
