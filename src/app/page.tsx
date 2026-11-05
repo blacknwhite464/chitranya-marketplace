@@ -182,6 +182,13 @@ export default function Home() {
   const justForYouProducts = liveProducts.filter((product) => product.stock > 0).slice(0, 10);
   const bestSellerProducts = liveProducts.filter((product) => product.stock > 0 && product.bestSeller).slice(0, 10);
 
+  const customHomepageSections: { id: string; title: string; description: string; categoryFilter: string; enabled: boolean }[] = (() => {
+    try {
+      const parsed = JSON.parse(content.homeCustomSectionsJson || "[]");
+      return Array.isArray(parsed) ? parsed.filter((section) => section && section.id && section.title) : [];
+    } catch { return []; }
+  })();
+
   const renderHomepageProductCards = (products: HomeProduct[]) => (
     <div className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {products.map((product) => {
@@ -364,6 +371,15 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {customHomepageSections.filter((section) => section.enabled !== false).map((section) => {
+        const matchingProducts = liveProducts.filter((product) => product.stock > 0 && (!section.categoryFilter || product.subCategory.toLowerCase() === section.categoryFilter.toLowerCase() || product.category.toLowerCase() === section.categoryFilter.toLowerCase())).slice(0, 10);
+        if (matchingProducts.length === 0) return null;
+        return <section key={section.id} id={"custom-" + section.id} className="mx-auto max-w-[1440px] px-3 py-12 md:px-5 md:py-16">
+          <div className="mb-7 flex flex-wrap items-end justify-between gap-4"><div><h2 className="text-3xl font-black text-slate-950 md:text-4xl">{section.title}</h2>{section.description && <p className="mt-2 text-slate-500">{section.description}</p>}</div><Link href="/products/" className="rounded-lg border border-blue-900 px-5 py-3 text-sm font-extrabold text-blue-900 hover:bg-blue-950 hover:text-white">Explore all products</Link></div>
+          {renderHomepageProductCards(matchingProducts)}
+        </section>;
+      })}
 
       {content.homeElectronicsEnabled !== "false" && (
       <section id="electronics" className="mx-auto max-w-7xl px-5 py-20">
