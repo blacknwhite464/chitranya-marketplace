@@ -238,7 +238,7 @@ export default function Home() {
         ) : liveProducts.length === 0 ? (
           <p className="rounded-xl border border-slate-200 bg-white py-14 text-center text-slate-500">New products are coming soon. Please check our full catalogue.</p>
         ) : (
-          <div className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {liveProducts.slice(0, 8).map((product) => (
               <article key={product.id} className="group flex min-w-0 flex-col overflow-hidden rounded-sm border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
                 <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-slate-50 p-6">
