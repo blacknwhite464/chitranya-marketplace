@@ -64,7 +64,8 @@ export default function AdminContentPage() {
         const snapshot = await getDoc(doc(db, "siteContent", "main"));
         if (snapshot.exists()) {
           const data = snapshot.data() as Record<string, unknown>;
-          setValues({ ...SITE_CONTENT_DEFAULTS, ...Object.fromEntries(Object.entries(data).filter(([, value]) => typeof value === "string")) });
+          const textValues = Object.entries(data).reduce<Record<string, string>>((result, [key, value]) => { if (typeof value === "string") result[key] = value; return result; }, {});
+          setValues({ ...SITE_CONTENT_DEFAULTS, ...textValues });
           try { const parsed = JSON.parse(String(data.homeCustomSectionsJson ?? "[]")); setCustomSections(Array.isArray(parsed) ? parsed : []); }
           catch { setCustomSections([]); }
         }
