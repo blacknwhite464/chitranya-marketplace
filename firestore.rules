@@ -33,8 +33,13 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    match /quoteServices/{serviceId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
     match /quotations/{quotationId} {
-      allow create: if
+      allow create: if isAdmin() || (
         request.resource.data.keys().hasAll([
           'quoteId','customerName','phone','email','notes','items',
           'itemCount','subtotal','discountTotal','total','status','createdAt'
@@ -67,10 +72,9 @@ service cloud.firestore {
         && request.resource.data.total is number
         && request.resource.data.total >= 0
         && request.resource.data.status == 'Pending'
-        && request.resource.data.createdAt == request.time;
+        && request.resource.data.createdAt == request.time);
       allow read: if isAdmin() || belongsToSignedInCustomer(resource.data);
-      allow update: if isAdmin();
-      allow delete: if false;
+      allow update, delete: if isAdmin();
     }
 
     match /orders/{orderId} {
