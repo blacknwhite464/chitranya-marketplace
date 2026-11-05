@@ -10,7 +10,6 @@ import {
   onSnapshot,
   updateDoc,
   writeBatch,
-  doc as firestoreDoc,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -257,7 +256,7 @@ export default function AdminProductsPage() {
       const batch = writeBatch(db);
       const firstId = products.reduce((highest, product) => Math.max(highest, product.id), 0) + 1;
       bulkRows.forEach((row, index) => {
-        const productRef = firestoreDoc(collection(db, "products"));
+        const productRef = doc(collection(db, "products"));
         batch.set(productRef, {
           id: firstId + index, name: row.name.trim(), category: row.category,
           mainCategory: row.category, subCategory: row.subCategory, price: Number(row.price),
