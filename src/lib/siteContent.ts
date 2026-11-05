@@ -30,6 +30,12 @@ export const SITE_CONTENT_DEFAULTS: Record<string, string> = {
   footerText: "CHITRANYA. Electronics | Hardware | Home Services",
   contactPhone: "",
   contactEmail: "",
+  adminContactEnabled: "true",
+  adminContactName: "Anil Suwal",
+  adminContactPhone: "9801364220",
+  adminContactEmail: "chitranyahardware@gmail.com",
+  adminContactPhotoUrl: "",
+  adminContactIntroduction: "Hello, I’m Anil Suwal, the main administrative contact at CHITRANYA. CHITRANYA is a retail business built to bring electronics, hardware, sanitary products, and practical home solutions together in one place. From everyday hardware and electrical essentials to home appliances, tools, plumbing materials, and home services, our goal is to make it easier for customers to find the products and support they need. Through our stores and online marketplace, we aim to offer helpful service, convenient shopping, and dependable assistance. I’m here to help with your enquiries, coordinate with our branches, and connect you with the right team. Please feel free to call, email, or WhatsApp me. Thank you for being part of CHITRANYA.",
 };
 
 export function useSiteContent() {
