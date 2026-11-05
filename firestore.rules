@@ -74,7 +74,8 @@ service cloud.firestore {
         && request.resource.data.status == 'Pending'
         && request.resource.data.createdAt == request.time);
       allow read: if isAdmin() || belongsToSignedInCustomer(resource.data);
-      allow update, delete: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin() || belongsToSignedInCustomer(resource.data);
     }
 
     match /orders/{orderId} {
