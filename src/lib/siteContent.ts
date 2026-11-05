@@ -18,6 +18,7 @@ export const SITE_CONTENT_DEFAULTS: Record<string, string> = {
   hardwareDescription: "Essential tools and materials for every project.",
   servicesTitle: "Home Services",
   servicesDescription: "Book dependable help for repairs, installation and home improvement.",
+  homeServicesEnabled: "true",
   productsTitle: "Shop All Products",
   productsDescription: "Explore the CHITRANYA catalogue.",
   electronicsPageTitle: "Electronics",
