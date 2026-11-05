@@ -33,6 +33,11 @@ const groups = [
   { title: "Home services page", description: "Main service banner content.", fields: [
     ["servicesPageEyebrow", "Small heading"], ["servicesPageTitle", "Main heading"], ["servicesPageDescription", "Description"],
   ]},
+  { title: "Main Admin Contact", description: "Manage the profile shown above the store branches on the Contact page. Turn it off to hide the profile without deleting its details.", fields: [
+    ["adminContactEnabled", "Show Main Admin Contact on Contact page"],
+    ["adminContactName", "Admin name"], ["adminContactPhone", "Mobile number"], ["adminContactEmail", "Email address"],
+    ["adminContactPhotoUrl", "Photo image URL (optional; add later)"], ["adminContactIntroduction", "Introduction and CHITRANYA brand message"],
+  ]},
 ] as const;
 
 export default function AdminContentPage() {
@@ -99,7 +104,7 @@ export default function AdminContentPage() {
         <div className="mb-5"><h2 className="text-xl font-black">{group.title}</h2><p className="mt-1 text-sm text-slate-500">{group.description}</p></div>
         <div className="grid gap-5 md:grid-cols-2">
           {group.fields.map(([key, label]) => <label key={key} className="block text-sm font-bold text-slate-700">{label}
-            {key.toLowerCase().includes("description") || key.toLowerCase().includes("title") || key === "announcement" || key === "footerText" ? <textarea rows={key.toLowerCase().includes("description") || key === "footerText" ? 3 : 2} value={values[key] ?? ""} onChange={(event) => change(key, event.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-orange-500" /> : <input value={values[key] ?? ""} onChange={(event) => change(key, event.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-orange-500" />}
+            {key === "adminContactEnabled" ? <input type="checkbox" checked={values[key] !== "false"} onChange={(event) => change(key, event.target.checked ? "true" : "false")} className="ml-3 h-5 w-5 accent-orange-500" /> : key.toLowerCase().includes("description") || key.toLowerCase().includes("introduction") || key.toLowerCase().includes("title") || key === "announcement" || key === "footerText" ? <textarea rows={key.toLowerCase().includes("description") || key.toLowerCase().includes("introduction") || key === "footerText" ? 5 : 2} value={values[key] ?? ""} onChange={(event) => change(key, event.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-orange-500" /> : <input value={values[key] ?? ""} onChange={(event) => change(key, event.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-orange-500" />}
           </label>)}
         </div>
       </section>)}
