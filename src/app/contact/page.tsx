@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useSiteContent } from "@/lib/siteContent";
 
 const branches = [
   {
@@ -36,6 +39,10 @@ const branches = [
 ];
 
 export default function ContactPage() {
+  const content = useSiteContent();
+  const adminPhone = content.adminContactPhone || "";
+  const adminEmail = content.adminContactEmail || "";
+  const adminPhoneDigits = adminPhone.replace(/[^0-9]/g, "");
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
       <section className="bg-blue-950 px-4 py-14 text-white md:py-20">
@@ -47,25 +54,29 @@ export default function ContactPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-10 md:py-14">
-        <article className="mb-8 overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm">
-          <div className="grid gap-6 p-6 sm:grid-cols-[180px_1fr] sm:items-center md:p-8">
-            <div className="flex aspect-square max-w-[180px] items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-center text-sm font-semibold text-slate-400">
-              Photo coming soon
-            </div>
-            <div>
-              <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-orange-600">Main Admin Contact</p>
-              <h2 className="mt-2 text-2xl font-black text-blue-950">Anil Suwal</h2>
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-                Hello, I’m Anil Suwal, the main administrative contact at CHITRANYA. CHITRANYA is a retail business built to bring electronics, hardware, sanitary products, and practical home solutions together in one place. From everyday hardware and electrical essentials to home appliances, tools, plumbing materials, and home services, our goal is to make it easier for customers to find the products and support they need. Through our stores and online marketplace, we aim to offer helpful service, convenient shopping, and dependable assistance. I’m here to help with your enquiries, coordinate with our branches, and connect you with the right team. Please feel free to call, email, or WhatsApp me. Thank you for being part of CHITRANYA.
-              </p>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <a href="tel:9801364220" className="rounded-lg bg-blue-950 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-900">Call 9801364220</a>
-                <a href="https://wa.me/9779801364220" target="_blank" rel="noreferrer" className="rounded-lg bg-green-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-green-700">WhatsApp</a>
-                <a href="mailto:chitranyahardware@gmail.com" className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-bold text-blue-950 hover:bg-slate-50">chitranyahardware@gmail.com</a>
+        {content.adminContactEnabled !== "false" && (
+          <article className="mb-8 overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm">
+            <div className="grid gap-6 p-6 sm:grid-cols-[180px_1fr] sm:items-center md:p-8">
+              {content.adminContactPhotoUrl ? (
+                <div className="aspect-square max-w-[180px] rounded-2xl bg-cover bg-center" role="img" aria-label={content.adminContactName || "CHITRANYA admin contact"} style={{ backgroundImage: `url("${content.adminContactPhotoUrl}")` }} />
+              ) : (
+                <div className="flex aspect-square max-w-[180px] items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-center text-sm font-semibold text-slate-400">
+                  Photo coming soon
+                </div>
+              )}
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-orange-600">Main Admin Contact</p>
+                <h2 className="mt-2 text-2xl font-black text-blue-950">{content.adminContactName}</h2>
+                <p className="mt-3 max-w-3xl whitespace-pre-line text-sm leading-7 text-slate-600">{content.adminContactIntroduction}</p>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  {adminPhoneDigits && <a href={`tel:${adminPhoneDigits}`} className="rounded-lg bg-blue-950 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-900">Call {adminPhone}</a>}
+                  {adminPhoneDigits && <a href={`https://wa.me/977${adminPhoneDigits.replace(/^977/, "")}`} target="_blank" rel="noreferrer" className="rounded-lg bg-green-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-green-700">WhatsApp</a>}
+                  {adminEmail && <a href={`mailto:${adminEmail}`} className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-bold text-blue-950 hover:bg-slate-50">{adminEmail}</a>}
+                </div>
               </div>
             </div>
-          </div>
-        </article>
+          </article>
+        )}
         <div className="grid gap-5 sm:grid-cols-2">
           {branches.map((branch, index) => (
             <article key={branch.name} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
