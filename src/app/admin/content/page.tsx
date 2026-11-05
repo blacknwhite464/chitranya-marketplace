@@ -50,6 +50,7 @@ export default function AdminContentPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [customSections, setCustomSections] = useState<{ id: string; title: string; description: string; categoryFilter: string; enabled: boolean }[]>([]);
 
   useEffect(() => {
     const stop = onAuthStateChanged(auth, async (user) => {
@@ -61,7 +62,12 @@ export default function AdminContentPage() {
       }
       try {
         const snapshot = await getDoc(doc(db, "siteContent", "main"));
-        if (snapshot.exists()) setValues({ ...SITE_CONTENT_DEFAULTS, ...(snapshot.data() as Record<string, string>) });
+        if (snapshot.exists()) {
+          const data = snapshot.data() as Record<string, unknown>;
+          setValues({ ...SITE_CONTENT_DEFAULTS, ...Object.fromEntries(Object.entries(data).filter(([, value]) => typeof value === "string")) });
+          try { const parsed = JSON.parse(String(data.homeCustomSectionsJson ?? "[]")); setCustomSections(Array.isArray(parsed) ? parsed : []); }
+          catch { setCustomSections([]); }
+        }
       } catch (loadError) {
         console.error(loadError);
         setError("Could not load website settings. Please refresh and try again.");
@@ -80,7 +86,7 @@ export default function AdminContentPage() {
     event.preventDefault();
     setSaving(true); setError(""); setMessage("");
     try {
-      await setDoc(doc(db, "siteContent", "main"), { ...values, updatedAt: serverTimestamp(), updatedBy: auth.currentUser?.uid || "" }, { merge: true });
+      await setDoc(doc(db, "siteContent", "main"), { ...values, homeCustomSectionsJson: JSON.stringify(customSections), updatedAt: serverTimestamp(), updatedBy: auth.currentUser?.uid || "" }, { merge: true });
       setMessage("Website content saved. Changes will appear on the website automatically.");
     } catch (saveError) {
       console.error(saveError);
@@ -111,6 +117,17 @@ export default function AdminContentPage() {
           </label>)}
         </div>
       </section>)}
+      <section className="rounded-2xl border border-orange-200 bg-white p-6 shadow-sm">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-black">Custom Homepage Sections</h2><p className="mt-1 text-sm text-slate-500">Add more product sections with your own titles. They appear below Best Sellers and above Electronics.</p></div><button type="button" onClick={() => setCustomSections((current) => [...current, { id: "section-" + Date.now(), title: "", description: "", categoryFilter: "", enabled: true }])} className="rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-extrabold text-white">+ Add homepage section</button></div>
+        {customSections.length === 0 ? <p className="rounded-xl bg-slate-50 p-5 text-sm text-slate-500">No custom sections yet. Click “Add homepage section” to create one.</p> : <div className="space-y-4">{customSections.map((section, index) => <div key={section.id} className="rounded-xl border border-slate-200 p-4">
+          <div className="mb-3 flex items-center justify-between gap-3"><p className="font-extrabold">Section {index + 1}</p><div className="flex items-center gap-3"><label className="flex items-center gap-2 text-sm font-bold"><input type="checkbox" checked={section.enabled} onChange={(event) => setCustomSections((current) => current.map((item) => item.id === section.id ? { ...item, enabled: event.target.checked } : item))} className="h-4 w-4 accent-orange-500" /> Show</label><button type="button" onClick={() => setCustomSections((current) => current.filter((item) => item.id !== section.id))} className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-bold text-red-600">Delete</button></div></div>
+          <div className="grid gap-4 md:grid-cols-2"><label className="text-sm font-bold text-slate-700">Section title<input required value={section.title} onChange={(event) => setCustomSections((current) => current.map((item) => item.id === section.id ? { ...item, title: event.target.value } : item))} placeholder="e.g. Popular Kitchen Appliances" className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal" /></label>
+          <label className="text-sm font-bold text-slate-700">Product category / subcategory filter (optional)<input value={section.categoryFilter} onChange={(event) => setCustomSections((current) => current.map((item) => item.id === section.id ? { ...item, categoryFilter: event.target.value } : item))} placeholder="e.g. Refrigerator or Electronics" className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal" /></label>
+          <label className="text-sm font-bold text-slate-700 md:col-span-2">Short description<textarea rows={2} value={section.description} onChange={(event) => setCustomSections((current) => current.map((item) => item.id === section.id ? { ...item, description: event.target.value } : item))} placeholder="Write a short line below the title" className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal" /></label></div>
+          <div className="mt-3 flex gap-2"><button type="button" disabled={index === 0} onClick={() => setCustomSections((current) => { const next = [...current]; [next[index - 1], next[index]] = [next[index], next[index - 1]]; return next; })} className="rounded-lg border px-3 py-1.5 text-xs font-bold disabled:opacity-30">Move up</button><button type="button" disabled={index === customSections.length - 1} onClick={() => setCustomSections((current) => { const next = [...current]; [next[index + 1], next[index]] = [next[index], next[index + 1]]; return next; })} className="rounded-lg border px-3 py-1.5 text-xs font-bold disabled:opacity-30">Move down</button></div>
+        </div>)}</div>}
+        <p className="mt-4 text-xs leading-5 text-slate-500">Leave the filter empty to show all available products. Enter a main category or subcategory name to show matching products. Each section displays up to 10 in-stock products.</p>
+      </section>
       <div className="sticky bottom-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"><p className="text-sm text-slate-500">Save your changes to publish the text updates to the website.</p><button disabled={saving} className="rounded-xl bg-orange-500 px-8 py-3.5 font-extrabold text-white hover:bg-orange-600 disabled:opacity-60">{saving ? "Saving..." : "Save website changes"}</button></div>
     </form>
   </main>;
