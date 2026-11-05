@@ -25,7 +25,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Daraz-inspired responsive product cards for Shop All. */
+/* Responsive Shop All grid: cards keep a consistent size as the browser grows. */
 .store-product-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -34,23 +34,30 @@ body {
   min-width: 0;
   align-items: stretch;
 }
-@media (min-width: 640px) {
+@media (min-width: 600px) {
   .store-product-grid {
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 230px));
+    justify-content: space-between;
+    gap: 0.85rem;
   }
 }
 @media (min-width: 1024px) {
   .store-product-grid {
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(190px, 230px));
+    justify-content: space-between;
     gap: 1rem;
   }
 }
 @media (min-width: 1536px) {
   .store-product-grid {
-    grid-template-columns: repeat(auto-fill, minmax(205px, 1fr));
-    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 240px));
+    justify-content: space-between;
+    gap: 1.1rem;
   }
 }
-.store-product-card { min-width: 0; width: 100%; }
+.store-product-card {
+  width: 100%;
+  max-width: 240px;
+  min-width: 0;
+}
 .store-product-card h3 { overflow-wrap: anywhere; }
