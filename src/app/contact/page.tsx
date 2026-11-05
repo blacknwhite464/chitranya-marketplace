@@ -56,7 +56,7 @@ export default function ContactPage() {
               <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-orange-600">Main Admin Contact</p>
               <h2 className="mt-2 text-2xl font-black text-blue-950">Anil Suwal</h2>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-                Anil Suwal is the main administrative contact for CHITRANYA. Reach out to him for general enquiries, assistance, and coordination related to our stores and services. He will be happy to help direct your request to the right team.
+                Hello, I’m Anil Suwal, the main administrative contact at CHITRANYA. I’m here to assist you with your enquiries about our products, stores, and services, and to help connect you with the right team. Please feel free to call, email, or WhatsApp me. Thank you for choosing CHITRANYA.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <a href="tel:9801364220" className="rounded-lg bg-blue-950 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-900">Call 9801364220</a>
