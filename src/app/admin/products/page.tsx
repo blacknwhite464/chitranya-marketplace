@@ -49,6 +49,28 @@ const emptyForm = {
 };
 
 type BulkProductForm = { name: string; category: string; subCategory: string; price: string; unit: string; stock: string; description: string; };
+type ImportProductRow = { name: string; category: string; subCategory: string; price: string; unit: string; stock: string; description: string; };
+function parseProductCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [], cell = "", quoted = false;
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i];
+    if (char === '"') {
+      if (quoted && text[i + 1] === '"') { cell += '"'; i += 1; }
+      else quoted = !quoted;
+    } else if (char === "," && !quoted) { row.push(cell.trim()); cell = ""; }
+    else if ((char === "\n" || char === "\r") && !quoted) {
+      if (char === "\r" && text[i + 1] === "\n") i += 1;
+      row.push(cell.trim()); cell = "";
+      if (row.some((value) => value !== "")) rows.push(row);
+      row = [];
+    } else cell += char;
+  }
+  row.push(cell.trim());
+  if (row.some((value) => value !== "")) rows.push(row);
+  return rows;
+}
+
 const emptyBulkProduct = (): BulkProductForm => ({ name: "", category: "Electronics", subCategory: "", price: "", unit: "pcs", stock: "10", description: "" });
 const money = (value: number) => "NPR " + value.toLocaleString("en-IN");
 
@@ -65,6 +87,10 @@ export default function AdminProductsPage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
   const [showBulkForm, setShowBulkForm] = useState(false);
+  const [showImportForm, setShowImportForm] = useState(false);
+  const [importRows, setImportRows] = useState<ImportProductRow[]>([]);
+  const [importFileName, setImportFileName] = useState("");
+  const [importSaving, setImportSaving] = useState(false);
   const [bulkRows, setBulkRows] = useState<BulkProductForm[]>([emptyBulkProduct(), emptyBulkProduct()]);
   const [bulkSaving, setBulkSaving] = useState(false);
   const [productSearch, setProductSearch] = useState("");
@@ -275,6 +301,92 @@ export default function AdminProductsPage() {
     } finally { setBulkSaving(false); }
   }
 
+
+  function downloadImportTemplate() {
+    const csv = "name,category,subcategory,price,unit,stock,description\nExample Smart TV,Electronics,Televisions & Smart TVs,45000,pcs,10,43 inch smart television\nExample Drill Machine,Hardware,Power Tools,6500,pcs,5,Heavy duty drill machine";
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+    const link = document.createElement("a");
+    link.href = url; link.download = "chitranya-product-import-template.csv"; link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function handleImportFile(file: File | undefined) {
+    if (!file) return;
+    setError(""); setMessage(""); setImportFileName(file.name);
+    try {
+      const parsed = parseProductCsv(await file.text());
+      if (parsed.length < 2) throw new Error("The file has no product rows. Use the CSV template and add your products below the heading row.");
+      const headers = parsed[0].map((value) => value.toLowerCase().replace(/\s+/g, "").replace(/_/g, ""));
+      const column = (names: string[]) => headers.findIndex((header) => names.includes(header));
+      const indexes = {
+        name: column(["name", "product", "productname"]),
+        category: column(["category", "maincategory"]),
+        subCategory: column(["subcategory", "subcategoryname"]),
+        price: column(["price", "sellingprice", "rate"]),
+        unit: column(["unit"]),
+        stock: column(["stock", "quantity", "qty"]),
+        description: column(["description", "details"]),
+      };
+      if (indexes.name < 0 || indexes.category < 0 || indexes.subCategory < 0 || indexes.price < 0) {
+        throw new Error("Missing required columns. Include: name, category, subcategory, price. Optional: unit, stock and description.");
+      }
+      const rows = parsed.slice(1).map((cells) => ({
+        name: cells[indexes.name] ?? "",
+        category: cells[indexes.category] ?? "",
+        subCategory: cells[indexes.subCategory] ?? "",
+        price: cells[indexes.price] ?? "",
+        unit: indexes.unit >= 0 ? (cells[indexes.unit] || "pcs") : "pcs",
+        stock: indexes.stock >= 0 ? (cells[indexes.stock] || "10") : "10",
+        description: indexes.description >= 0 ? (cells[indexes.description] || "") : "",
+      }));
+      if (rows.length > 400) throw new Error("Please import up to 400 products per file.");
+      const problems: string[] = [];
+      rows.forEach((row, index) => {
+        const category = row.category.trim();
+        const price = Number(row.price);
+        const stock = Number(row.stock);
+        const subExists = availableSubcategories.some((item) => item.active && item.mainCategory === category && item.name.toLowerCase() === row.subCategory.trim().toLowerCase());
+        if (!row.name.trim()) problems.push("Row " + (index + 2) + ": product name is missing.");
+        else if (!["Electronics", "Hardware", "Home Services"].includes(category)) problems.push("Row " + (index + 2) + ": category must be Electronics, Hardware or Home Services.");
+        else if (!subExists) problems.push("Row " + (index + 2) + ": subcategory does not match " + category + ".");
+        else if (!Number.isFinite(price) || price <= 0) problems.push("Row " + (index + 2) + ": enter a valid price.");
+        else if (!Number.isInteger(stock) || stock < 0) problems.push("Row " + (index + 2) + ": stock must be zero or a positive whole number.");
+      });
+      if (problems.length) throw new Error(problems.slice(0, 8).join(" ") + (problems.length > 8 ? " And " + (problems.length - 8) + " more error(s)." : ""));
+      setImportRows(rows);
+      setMessage("Ready to import " + rows.length + " products. Review the preview before saving.");
+    } catch (err) {
+      setImportRows([]);
+      setError(err instanceof Error ? err.message : "Could not read this CSV file.");
+    }
+  }
+
+  async function saveImportedProducts() {
+    if (!importRows.length) return;
+    setImportSaving(true); setError(""); setMessage("");
+    try {
+      const batch = writeBatch(db);
+      const firstId = products.reduce((highest, product) => Math.max(highest, product.id), 0) + 1;
+      importRows.forEach((row, index) => {
+        const productRef = doc(collection(db, "products"));
+        const category = row.category.trim();
+        const subCategory = availableSubcategories.find((item) => item.active && item.mainCategory === category && item.name.toLowerCase() === row.subCategory.trim().toLowerCase())?.name ?? row.subCategory.trim();
+        batch.set(productRef, {
+          id: firstId + index, name: row.name.trim(), category, mainCategory: category,
+          subCategory, price: Number(row.price), unit: row.unit.trim() || "pcs",
+          emoji: "", imageUrl: "", description: row.description.trim() || row.name.trim(),
+          specifications: [], stock: Number(row.stock || 10), active: true,
+        });
+      });
+      await batch.commit();
+      setMessage(importRows.length + " products imported successfully.");
+      setImportRows([]); setImportFileName(""); setShowImportForm(false);
+    } catch (err) {
+      console.error(err);
+      setError("Import failed. Check your internet connection and Firestore rules, then try again.");
+    } finally { setImportSaving(false); }
+  }
+
   async function removeProduct(product: Product) {
     const confirmed = window.confirm(`Delete "${product.name}"? This cannot be undone.`);
     if (!confirmed) return;
@@ -323,10 +435,45 @@ export default function AdminProductsPage() {
       <section className="mx-auto grid max-w-7xl gap-8 px-5 py-8 lg:grid-cols-[380px_1fr]">
         <div>
           <div className="mb-4 flex flex-wrap gap-2">
-            <button type="button" onClick={() => setShowBulkForm(false)} className={!showBulkForm ? "rounded-lg bg-blue-800 px-4 py-2 text-sm font-bold text-white" : "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700"}>Add One Product</button>
-            <button type="button" onClick={() => { setShowBulkForm(true); setError(""); setMessage(""); }} className={showBulkForm ? "rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-white" : "rounded-lg border border-orange-300 bg-white px-4 py-2 text-sm font-bold text-orange-700"}>Bulk Add Products</button>
+            <button type="button" onClick={() => { setShowBulkForm(false); setShowImportForm(false); setError(""); }} className={!showBulkForm && !showImportForm ? "rounded-lg bg-blue-800 px-4 py-2 text-sm font-bold text-white" : "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700"}>Add One</button>
+            <button type="button" onClick={() => { setShowBulkForm(true); setShowImportForm(false); setError(""); setMessage(""); }} className={showBulkForm ? "rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-white" : "rounded-lg border border-orange-300 bg-white px-4 py-2 text-sm font-bold text-orange-700"}>Bulk Entry</button>
+            <button type="button" onClick={() => { setShowImportForm(true); setShowBulkForm(false); setError(""); setMessage(""); }} className={showImportForm ? "rounded-lg bg-green-700 px-4 py-2 text-sm font-bold text-white" : "rounded-lg border border-green-300 bg-white px-4 py-2 text-sm font-bold text-green-700"}>Import Excel / CSV</button>
           </div>
-          {showBulkForm ? (
+          {showImportForm ? (
+            <section className="space-y-5 rounded-2xl bg-white p-5 shadow-sm">
+              <div>
+                <h2 className="text-xl font-black text-slate-900">Import many products at once</h2>
+                <p className="mt-1 text-sm leading-6 text-slate-600">Prepare your product list in Excel, save it as CSV, then upload it here. You can import up to 400 products at a time.</p>
+              </div>
+              <button type="button" onClick={downloadImportTemplate} className="w-full rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-800">Download Excel / CSV Template</button>
+              <div className="rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-5">
+                <label className="block cursor-pointer text-center">
+                  <span className="block text-sm font-bold text-slate-800">Choose your completed CSV file</span>
+                  <span className="mt-1 block text-xs text-slate-500">Export your Excel sheet as CSV (Comma delimited)</span>
+                  <input type="file" accept=".csv,text/csv" onChange={(event) => void handleImportFile(event.target.files?.[0])} className="mt-4 block w-full text-sm" />
+                </label>
+                {importFileName && <p className="mt-3 text-center text-xs font-semibold text-slate-600">{importFileName}</p>}
+              </div>
+              <div className="rounded-xl bg-amber-50 p-4 text-xs leading-5 text-amber-900">
+                <strong>Required columns:</strong> name, category, subcategory, price. Optional: unit, stock, description. Category must match Electronics, Hardware or Home Services, and the subcategory must already exist in Manage Categories. Missing stock defaults to 10; missing description defaults to the product name.
+              </div>
+              {importRows.length > 0 && (
+                <div>
+                  <div className="mb-3 flex items-center justify-between gap-2">
+                    <h3 className="font-bold text-slate-900">Preview ({importRows.length} products)</h3>
+                    <button type="button" onClick={() => { setImportRows([]); setImportFileName(""); }} className="text-xs font-semibold text-red-600">Clear file</button>
+                  </div>
+                  <div className="max-h-80 overflow-auto rounded-xl border border-slate-200">
+                    <table className="w-full min-w-[620px] text-left text-xs">
+                      <thead className="sticky top-0 bg-slate-100 text-slate-600"><tr><th className="p-2">#</th><th className="p-2">Product</th><th className="p-2">Category / Subcategory</th><th className="p-2">Price</th><th className="p-2">Stock</th></tr></thead>
+                      <tbody>{importRows.map((row, index) => <tr key={index} className="border-t"><td className="p-2">{index + 1}</td><td className="p-2 font-semibold">{row.name}</td><td className="p-2">{row.category} / {row.subCategory}</td><td className="p-2">{money(Number(row.price))}</td><td className="p-2">{row.stock}</td></tr>)}</tbody>
+                    </table>
+                  </div>
+                  <button type="button" disabled={importSaving} onClick={() => void saveImportedProducts()} className="mt-4 w-full rounded-xl bg-green-700 px-4 py-3 font-bold text-white hover:bg-green-800 disabled:opacity-60">{importSaving ? "Importing products..." : "Confirm & Import " + importRows.length + " Products"}</button>
+                </div>
+              )}
+            </section>
+          ) : showBulkForm ? (
             <form onSubmit={saveBulkProducts} className="space-y-5 rounded-2xl bg-white p-5 shadow-sm">
               <div><h2 className="text-xl font-black text-slate-900">Bulk Add Products</h2><p className="mt-1 text-sm text-slate-600">Enter products under each main category. Select the matching subcategory for every product, then save all rows together.</p></div>
               {(["Electronics", "Hardware", "Home Services"] as const).map((mainCategory) => {
