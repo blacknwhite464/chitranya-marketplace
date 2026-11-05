@@ -104,6 +104,7 @@ export default function Home() {
   const content = useSiteContent();
   const [liveProducts, setLiveProducts] = useState<HomeProduct[]>([]);
   const [pricingRules, setPricingRules] = useState<Record<string, number>>({});
+  const [pricingRuleEnabled, setPricingRuleEnabled] = useState<Record<string, boolean>>({});
   const [homepageCategories, setHomepageCategories] = useState<{ id: string; mainCategory: string; name: string; image: string; description: string }[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [addedProductId, setAddedProductId] = useState<number | null>(null);
@@ -111,11 +112,14 @@ export default function Home() {
   useEffect(() => {
     const stop = onSnapshot(collection(db, "pricingRules"), (snapshot) => {
       const rules: Record<string, number> = {};
+      const enabled: Record<string, boolean> = {};
       snapshot.docs.forEach((entry) => {
         const percent = Number(entry.data().discountPercent ?? 0);
         rules[entry.id] = Number.isFinite(percent) ? Math.min(100, Math.max(0, percent)) : 0;
+        enabled[entry.id] = entry.data().enabled !== false;
       });
       setPricingRules(rules);
+      setPricingRuleEnabled(enabled);
     }, (error) => console.error("Homepage pricing rules could not be loaded:", error));
     return () => stop();
   }, []);
@@ -170,7 +174,8 @@ export default function Home() {
     if (product.discountMode === "fixed") return 0;
     if (product.discountMode === "override") return Math.min(100, Math.max(0, product.discountPercent || 0));
     const subcategoryRule = "subcategory:" + product.category + "::" + product.subCategory;
-    return pricingRules[subcategoryRule] ?? pricingRules[product.category] ?? 0;
+    if (pricingRuleEnabled[subcategoryRule] !== false && pricingRules[subcategoryRule] !== undefined) return pricingRules[subcategoryRule];
+    return pricingRuleEnabled[product.category] === false ? 0 : pricingRules[product.category] ?? 0;
   };
 
   return (
