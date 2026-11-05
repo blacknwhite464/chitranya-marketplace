@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { addDoc, collection, deleteDoc, doc, getDocs, onSnapshot, query, updateDoc, where } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { auth, db } from "@/lib/firebase";
@@ -91,9 +91,39 @@ export default function AdminCategoriesPage() {
     setBusy(true); setError(""); setNotice("");
     try {
       if (editingId) {
-        const { updateDoc } = await import("firebase/firestore");
+        const previous = items.find((item) => item.id === editingId);
+        if (!previous) throw new Error("The selected subcategory could not be found. Refresh the page and try again.");
+
+        const productsSnapshot = await getDocs(query(
+          collection(db, "products"),
+          where("subCategory", "==", previous.name),
+          where("mainCategory", "==", previous.mainCategory)
+        ));
+
+        // Update products in safe-sized batches so they remain assigned to the renamed category.
+        for (let start = 0; start < productsSnapshot.docs.length; start += 450) {
+          const batch = writeBatch(db);
+          productsSnapshot.docs.slice(start, start + 450).forEach((product) => {
+            batch.update(product.ref, { subCategory: cleanName, mainCategory, category: mainCategory });
+          });
+          await batch.commit();
+        }
+
+        // Keep any existing subcategory discount when the subcategory is renamed.
+        const oldRuleId = "subcategory:" + previous.mainCategory + "::" + previous.name;
+        const newRuleId = "subcategory:" + mainCategory + "::" + cleanName;
+        if (oldRuleId !== newRuleId) {
+          const oldRuleRef = doc(db, "pricingRules", oldRuleId);
+          const newRuleRef = doc(db, "pricingRules", newRuleId);
+          const [oldRule, newRule] = await Promise.all([getDoc(oldRuleRef), getDoc(newRuleRef)]);
+          if (oldRule.exists() && !newRule.exists()) {
+            await setDoc(newRuleRef, { ...oldRule.data(), mainCategory, subCategory: cleanName });
+            await deleteDoc(oldRuleRef);
+          }
+        }
+
         await updateDoc(doc(db, "categories", editingId), { mainCategory, name: cleanName });
-        setNotice("Subcategory updated.");
+        setNotice("Subcategory renamed. " + productsSnapshot.size + " assigned product(s) were updated and kept in the store.");
       } else {
         await addDoc(collection(db, "categories"), { mainCategory, name: cleanName, active: true, showOnHomepage: false });
         setNotice("Subcategory added.");
