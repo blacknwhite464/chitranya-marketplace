@@ -171,7 +171,7 @@ export default function AdminProductsPage() {
       imageUrl: product.imageUrl ?? "",
       description: product.description,
       specifications: product.specifications.join("\n"),
-      stock: String(product.stock),
+      stock: product.stock > 0 ? "10" : "0",
       active: product.active,
     });
     setSelectedImage(null);
@@ -187,9 +187,9 @@ export default function AdminProductsPage() {
     setMessage("");
 
     const price = Number(form.price);
-    const stock = Number(form.stock);
-    if (!form.name.trim() || !form.description.trim() || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0) {
-      setError("Enter a product name, description, valid price and valid stock quantity.");
+    const stock = form.stock === "0" ? 0 : 10;
+    if (!form.name.trim() || !form.description.trim() || !Number.isFinite(price) || price <= 0) {
+      setError("Enter a product name, description and valid price.");
       return;
     }
 
@@ -271,9 +271,8 @@ export default function AdminProductsPage() {
     for (let index = 0; index < bulkRows.length; index += 1) {
       const row = bulkRows[index];
       const price = Number(row.price);
-      const stock = Number(row.stock);
-      if (!row.name.trim() || !row.description.trim() || !row.subCategory || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0) {
-        setError("Please complete the name, subcategory, description, valid price and stock for product row " + (index + 1) + ".");
+      if (!row.name.trim() || !row.description.trim() || !row.subCategory || !Number.isFinite(price) || price <= 0) {
+        setError("Please complete the name, subcategory, description and valid price for product row " + (index + 1) + ".");
         return;
       }
     }
@@ -288,7 +287,7 @@ export default function AdminProductsPage() {
           id: firstId + index, name: row.name.trim(), category: row.category,
           mainCategory: row.category, subCategory: row.subCategory, price: Number(row.price),
           unit: row.unit, emoji: "", imageUrl: "", description: row.description.trim(),
-          specifications: [], stock: Number(row.stock), active: true,
+          specifications: [], stock: row.stock === "0" ? 0 : 10, active: true,
         });
       });
       await batch.commit();
@@ -336,7 +335,7 @@ export default function AdminProductsPage() {
         subCategory: cells[indexes.subCategory] ?? "",
         price: cells[indexes.price] ?? "",
         unit: indexes.unit >= 0 ? (cells[indexes.unit] || "pcs") : "pcs",
-        stock: indexes.stock >= 0 ? (cells[indexes.stock] || "10") : "10",
+        stock: (() => { const value = indexes.stock >= 0 ? (cells[indexes.stock] || "Stock") : "Stock"; const normalized = value.trim().toLowerCase(); return normalized === "0" || normalized === "out of stock" || normalized === "out-of-stock" || normalized === "unavailable" ? "0" : "10"; })(),
         description: indexes.description >= 0 ? (cells[indexes.description] || "") : "",
       }));
       if (rows.length > 400) throw new Error("Please import up to 400 products per file.");
@@ -344,13 +343,12 @@ export default function AdminProductsPage() {
       rows.forEach((row, index) => {
         const category = row.category.trim();
         const price = Number(row.price);
-        const stock = Number(row.stock);
         const subExists = availableSubcategories.some((item) => item.active && item.mainCategory === category && item.name.toLowerCase() === row.subCategory.trim().toLowerCase());
         if (!row.name.trim()) problems.push("Row " + (index + 2) + ": product name is missing.");
         else if (!["Electronics", "Hardware", "Home Services"].includes(category)) problems.push("Row " + (index + 2) + ": category must be Electronics, Hardware or Home Services.");
         else if (!subExists) problems.push("Row " + (index + 2) + ": subcategory does not match " + category + ".");
         else if (!Number.isFinite(price) || price <= 0) problems.push("Row " + (index + 2) + ": enter a valid price.");
-        else if (!Number.isInteger(stock) || stock < 0) problems.push("Row " + (index + 2) + ": stock must be zero or a positive whole number.");
+        
       });
       if (problems.length) throw new Error(problems.slice(0, 8).join(" ") + (problems.length > 8 ? " And " + (problems.length - 8) + " more error(s)." : ""));
       setImportRows(rows);
@@ -375,7 +373,7 @@ export default function AdminProductsPage() {
           id: firstId + index, name: row.name.trim(), category, mainCategory: category,
           subCategory, price: Number(row.price), unit: row.unit.trim() || "pcs",
           emoji: "", imageUrl: "", description: row.description.trim() || row.name.trim(),
-          specifications: [], stock: Number(row.stock || 10), active: true,
+          specifications: [], stock: row.stock === "0" ? 0 : 10, active: true,
         });
       });
       await batch.commit();
@@ -455,7 +453,7 @@ export default function AdminProductsPage() {
                 {importFileName && <p className="mt-3 text-center text-xs font-semibold text-slate-600">{importFileName}</p>}
               </div>
               <div className="rounded-xl bg-amber-50 p-4 text-xs leading-5 text-amber-900">
-                <strong>Required columns:</strong> name, category, subcategory, price. Optional: unit, stock, description. Category must match Electronics, Hardware or Home Services, and the subcategory must already exist in Manage Categories. Missing stock defaults to 10; missing description defaults to the product name.
+                <strong>Required columns:</strong> name, category, subcategory, price. Optional: unit, availability, description. Set availability to <b>Stock</b> or <b>Out of Stock</b>. If omitted, products default to Stock. Category must match Electronics, Hardware or Home Services, and the subcategory must already exist in Manage Categories. Missing description defaults to the product name.
               </div>
               {importRows.length > 0 && (
                 <div>
@@ -465,8 +463,8 @@ export default function AdminProductsPage() {
                   </div>
                   <div className="max-h-80 overflow-auto rounded-xl border border-slate-200">
                     <table className="w-full min-w-[620px] text-left text-xs">
-                      <thead className="sticky top-0 bg-slate-100 text-slate-600"><tr><th className="p-2">#</th><th className="p-2">Product</th><th className="p-2">Category / Subcategory</th><th className="p-2">Price</th><th className="p-2">Stock</th></tr></thead>
-                      <tbody>{importRows.map((row, index) => <tr key={index} className="border-t"><td className="p-2">{index + 1}</td><td className="p-2 font-semibold">{row.name}</td><td className="p-2">{row.category} / {row.subCategory}</td><td className="p-2">{money(Number(row.price))}</td><td className="p-2">{row.stock}</td></tr>)}</tbody>
+                      <thead className="sticky top-0 bg-slate-100 text-slate-600"><tr><th className="p-2">#</th><th className="p-2">Product</th><th className="p-2">Category / Subcategory</th><th className="p-2">Price</th><th className="p-2">Availability</th></tr></thead>
+                      <tbody>{importRows.map((row, index) => <tr key={index} className="border-t"><td className="p-2">{index + 1}</td><td className="p-2 font-semibold">{row.name}</td><td className="p-2">{row.category} / {row.subCategory}</td><td className="p-2">{money(Number(row.price))}</td><td className="p-2">{row.stock === "0" ? "Out of Stock" : "Stock"}</td></tr>)}</tbody>
                     </table>
                   </div>
                   <button type="button" disabled={importSaving} onClick={() => void saveImportedProducts()} className="mt-4 w-full rounded-xl bg-green-700 px-4 py-3 font-bold text-white hover:bg-green-800 disabled:opacity-60">{importSaving ? "Importing products..." : "Confirm & Import " + importRows.length + " Products"}</button>
@@ -487,7 +485,7 @@ export default function AdminProductsPage() {
                     <div className="overflow-x-auto">
                       <table className="w-full min-w-[1000px] border-collapse text-left text-sm">
                         <thead className="bg-white text-xs uppercase tracking-wide text-slate-600">
-                          <tr><th className="p-3">S.N.</th><th className="p-3">Product name</th><th className="p-3">Subcategory</th><th className="p-3">Price (NPR)</th><th className="p-3">Unit</th><th className="p-3">Stock</th><th className="p-3">Description</th><th className="p-3">Action</th></tr>
+                          <tr><th className="p-3">S.N.</th><th className="p-3">Product name</th><th className="p-3">Subcategory</th><th className="p-3">Price (NPR)</th><th className="p-3">Unit</th><th className="p-3">Availability</th><th className="p-3">Description</th><th className="p-3">Action</th></tr>
                         </thead>
                         <tbody>
                           {categoryRows.length ? categoryRows.map(({ row, index }, categoryIndex) => (
@@ -497,7 +495,7 @@ export default function AdminProductsPage() {
                               <td className="p-2"><select required aria-label="Subcategory" value={row.subCategory} onChange={(event) => updateBulkRow(index, "subCategory", event.target.value)} className="w-44 rounded-lg border bg-white px-2 py-2"><option value="">Select subcategory</option>{availableSubcategories.filter((item) => item.mainCategory === mainCategory).sort((a, b) => a.name.localeCompare(b.name)).map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}</select></td>
                               <td className="p-2"><input required type="number" min="1" step="1" aria-label="Price in NPR" value={row.price} onChange={(event) => updateBulkRow(index, "price", event.target.value)} className="w-28 rounded-lg border px-2 py-2" placeholder="Price" /></td>
                               <td className="p-2"><select aria-label="Unit" value={row.unit} onChange={(event) => updateBulkRow(index, "unit", event.target.value)} className="w-28 rounded-lg border bg-white px-2 py-2"><option value="pcs">Piece</option><option value="set">Set</option><option value="box">Box</option><option value="pair">Pair</option><option value="kg">Kg</option><option value="meter">Meter</option><option value="feet">Feet</option><option value="litre">Litre</option><option value="roll">Roll</option><option value="pack">Pack</option><option value="unit">Unit</option><option value="service">Service</option></select></td>
-                              <td className="p-2"><input required type="number" min="0" step="1" aria-label="Stock" value={row.stock} onChange={(event) => updateBulkRow(index, "stock", event.target.value)} className="w-20 rounded-lg border px-2 py-2" /></td>
+                              <td className="p-2"><select aria-label="Availability" value={row.stock} onChange={(event) => updateBulkRow(index, "stock", event.target.value)} className="w-32 rounded-lg border bg-white px-2 py-2"><option value="10">Stock</option><option value="0">Out of Stock</option></select></td>
                               <td className="p-2"><input required aria-label="Description" value={row.description} onChange={(event) => updateBulkRow(index, "description", event.target.value)} className="w-44 rounded-lg border px-2 py-2" placeholder="Description" /></td>
                               <td className="p-2"><button type="button" onClick={() => setBulkRows((rows) => rows.filter((_, rowIndex) => rowIndex !== index))} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600">Remove</button></td>
                             </tr>
@@ -544,8 +542,8 @@ export default function AdminProductsPage() {
               <label className="block text-sm font-semibold text-slate-700">Unit
                 <select value={form.unit} onChange={(event) => setForm({ ...form, unit: event.target.value })} className="mt-1 w-full rounded-lg border bg-white px-3 py-2"><option value="pcs">Piece (pcs)</option><option value="set">Set</option><option value="box">Box</option><option value="pair">Pair</option><option value="kg">Kilogram (kg)</option><option value="g">Gram (g)</option><option value="meter">Meter (m)</option><option value="feet">Feet (ft)</option><option value="litre">Litre (L)</option><option value="roll">Roll</option><option value="pack">Pack</option><option value="unit">Unit</option><option value="service">Service</option></select>
               </label>
-              <label className="col-span-2 block text-sm font-semibold text-slate-700">Stock
-                <input required type="number" min="0" step="1" value={form.stock} onChange={(event) => setForm({ ...form, stock: event.target.value })} className="mt-1 w-full rounded-lg border px-3 py-2" />
+              <label className="col-span-2 block text-sm font-semibold text-slate-700">Product Availability
+                <select value={form.stock} onChange={(event) => setForm({ ...form, stock: event.target.value })} className="mt-1 w-full rounded-lg border bg-white px-3 py-2"><option value="10">Stock</option><option value="0">Out of Stock</option></select>
               </label>
             </div>
 
@@ -606,7 +604,7 @@ export default function AdminProductsPage() {
                     <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-slate-50 p-1">{product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full object-contain" /> : <span className="text-center text-[8px] font-black uppercase leading-tight tracking-wide text-blue-950">CHITRANYA<br/><span className="font-semibold text-slate-400">No Product Photo</span></span>}</div>
                     <div className="min-w-0">
                       <h3 className="truncate font-bold text-slate-900">{product.name}</h3>
-                      <p className="text-sm text-slate-500">{product.mainCategory || product.category}{product.subCategory ? " / " + product.subCategory : ""} · {money(product.price)} / {product.unit || "pcs"} · Stock: {product.stock}</p>
+                      <p className="text-sm text-slate-500">{product.mainCategory || product.category}{product.subCategory ? " / " + product.subCategory : ""} · {money(product.price)} / {product.unit || "pcs"} · {product.stock > 0 ? "Stock" : "Out of Stock"}</p>
                       <p className={product.active ? "text-xs font-semibold text-green-700" : "text-xs font-semibold text-slate-500"}>{product.active ? "Visible in store" : "Hidden from store"}</p>
                     </div>
                   </div>
