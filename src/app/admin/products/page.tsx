@@ -319,32 +319,41 @@ export default function AdminProductsPage() {
             <button type="button" onClick={() => { setShowBulkForm(true); setError(""); setMessage(""); }} className={showBulkForm ? "rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-white" : "rounded-lg border border-orange-300 bg-white px-4 py-2 text-sm font-bold text-orange-700"}>Bulk Add Products</button>
           </div>
           {showBulkForm ? (
-            <form onSubmit={saveBulkProducts} className="space-y-4 rounded-2xl bg-white p-5 shadow-sm">
-              <div><h2 className="text-xl font-black text-slate-900">Bulk Add Products</h2><p className="mt-1 text-sm text-slate-600">Enter several products, then save them together.</p></div>
-              <div className="overflow-x-auto rounded-xl border border-slate-200">
-                <table className="w-full min-w-[1050px] border-collapse text-left text-sm">
-                  <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-600">
-                    <tr><th className="p-3">S.N.</th><th className="p-3">Product name</th><th className="p-3">Category</th><th className="p-3">Subcategory</th><th className="p-3">Price (NPR)</th><th className="p-3">Unit</th><th className="p-3">Stock</th><th className="p-3">Description</th><th className="p-3">Action</th></tr>
-                  </thead>
-                  <tbody>
-                    {bulkRows.map((row, index) => (
-                      <tr key={index} className="border-t border-slate-200 align-top">
-                        <td className="p-3 font-bold text-slate-500">{index + 1}</td>
-                        <td className="p-2"><input required aria-label={"Product " + (index + 1) + " name"} value={row.name} onChange={(event) => updateBulkRow(index, "name", event.target.value)} className="w-40 rounded-lg border px-2 py-2" placeholder="Product name" /></td>
-                        <td className="p-2"><select aria-label="Category" value={row.category} onChange={(event) => updateBulkRow(index, "category", event.target.value)} className="w-36 rounded-lg border bg-white px-2 py-2"><option>Electronics</option><option>Hardware</option><option>Home Services</option></select></td>
-                        <td className="p-2"><select required aria-label="Subcategory" value={row.subCategory} onChange={(event) => updateBulkRow(index, "subCategory", event.target.value)} className="w-40 rounded-lg border bg-white px-2 py-2"><option value="">Select</option>{availableSubcategories.filter((item) => item.mainCategory === row.category).sort((a, b) => a.name.localeCompare(b.name)).map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}</select></td>
-                        <td className="p-2"><input required type="number" min="1" step="1" aria-label="Price in NPR" value={row.price} onChange={(event) => updateBulkRow(index, "price", event.target.value)} className="w-28 rounded-lg border px-2 py-2" placeholder="Price" /></td>
-                        <td className="p-2"><select aria-label="Unit" value={row.unit} onChange={(event) => updateBulkRow(index, "unit", event.target.value)} className="w-28 rounded-lg border bg-white px-2 py-2"><option value="pcs">Piece</option><option value="set">Set</option><option value="box">Box</option><option value="pair">Pair</option><option value="kg">Kg</option><option value="meter">Meter</option><option value="feet">Feet</option><option value="litre">Litre</option><option value="roll">Roll</option><option value="pack">Pack</option><option value="unit">Unit</option><option value="service">Service</option></select></td>
-                        <td className="p-2"><input required type="number" min="0" step="1" aria-label="Stock" value={row.stock} onChange={(event) => updateBulkRow(index, "stock", event.target.value)} className="w-20 rounded-lg border px-2 py-2" /></td>
-                        <td className="p-2"><input required aria-label="Description" value={row.description} onChange={(event) => updateBulkRow(index, "description", event.target.value)} className="w-44 rounded-lg border px-2 py-2" placeholder="Description" /></td>
-                        <td className="p-2">{bulkRows.length > 1 && <button type="button" onClick={() => setBulkRows((rows) => rows.filter((_, rowIndex) => rowIndex !== index))} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600">Remove</button>}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <button type="button" onClick={() => setBulkRows((rows) => [...rows, emptyBulkProduct()])} className="w-full rounded-lg border-2 border-dashed border-blue-300 px-4 py-3 font-bold text-blue-800 hover:bg-blue-50">+ Add Another Product</button>
-              <button disabled={bulkSaving} className="w-full rounded-lg bg-orange-500 px-4 py-3 font-bold text-white hover:bg-orange-600 disabled:opacity-60">{bulkSaving ? "Creating Products..." : "Save All " + bulkRows.length + " Products"}</button>
+            <form onSubmit={saveBulkProducts} className="space-y-5 rounded-2xl bg-white p-5 shadow-sm">
+              <div><h2 className="text-xl font-black text-slate-900">Bulk Add Products</h2><p className="mt-1 text-sm text-slate-600">Enter products under each main category. Select the matching subcategory for every product, then save all rows together.</p></div>
+              {(["Electronics", "Hardware", "Home Services"] as const).map((mainCategory) => {
+                const categoryRows = bulkRows.map((row, index) => ({ row, index })).filter(({ row }) => row.category === mainCategory);
+                return (
+                  <section key={mainCategory} className="overflow-hidden rounded-xl border border-slate-200">
+                    <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-100 px-4 py-3">
+                      <h3 className="font-black text-slate-900">{mainCategory}</h3>
+                      <button type="button" onClick={() => setBulkRows((rows) => [...rows, { ...emptyBulkProduct(), category: mainCategory }])} className="rounded-lg bg-blue-800 px-3 py-2 text-xs font-bold text-white">+ Add {mainCategory} Product</button>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[1000px] border-collapse text-left text-sm">
+                        <thead className="bg-white text-xs uppercase tracking-wide text-slate-600">
+                          <tr><th className="p-3">S.N.</th><th className="p-3">Product name</th><th className="p-3">Subcategory</th><th className="p-3">Price (NPR)</th><th className="p-3">Unit</th><th className="p-3">Stock</th><th className="p-3">Description</th><th className="p-3">Action</th></tr>
+                        </thead>
+                        <tbody>
+                          {categoryRows.length ? categoryRows.map(({ row, index }, categoryIndex) => (
+                            <tr key={index} className="border-t border-slate-200 align-top">
+                              <td className="p-3 font-bold text-slate-500">{categoryIndex + 1}</td>
+                              <td className="p-2"><input required aria-label={mainCategory + " product " + (categoryIndex + 1) + " name"} value={row.name} onChange={(event) => updateBulkRow(index, "name", event.target.value)} className="w-40 rounded-lg border px-2 py-2" placeholder="Product name" /></td>
+                              <td className="p-2"><select required aria-label="Subcategory" value={row.subCategory} onChange={(event) => updateBulkRow(index, "subCategory", event.target.value)} className="w-44 rounded-lg border bg-white px-2 py-2"><option value="">Select subcategory</option>{availableSubcategories.filter((item) => item.mainCategory === mainCategory).sort((a, b) => a.name.localeCompare(b.name)).map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}</select></td>
+                              <td className="p-2"><input required type="number" min="1" step="1" aria-label="Price in NPR" value={row.price} onChange={(event) => updateBulkRow(index, "price", event.target.value)} className="w-28 rounded-lg border px-2 py-2" placeholder="Price" /></td>
+                              <td className="p-2"><select aria-label="Unit" value={row.unit} onChange={(event) => updateBulkRow(index, "unit", event.target.value)} className="w-28 rounded-lg border bg-white px-2 py-2"><option value="pcs">Piece</option><option value="set">Set</option><option value="box">Box</option><option value="pair">Pair</option><option value="kg">Kg</option><option value="meter">Meter</option><option value="feet">Feet</option><option value="litre">Litre</option><option value="roll">Roll</option><option value="pack">Pack</option><option value="unit">Unit</option><option value="service">Service</option></select></td>
+                              <td className="p-2"><input required type="number" min="0" step="1" aria-label="Stock" value={row.stock} onChange={(event) => updateBulkRow(index, "stock", event.target.value)} className="w-20 rounded-lg border px-2 py-2" /></td>
+                              <td className="p-2"><input required aria-label="Description" value={row.description} onChange={(event) => updateBulkRow(index, "description", event.target.value)} className="w-44 rounded-lg border px-2 py-2" placeholder="Description" /></td>
+                              <td className="p-2"><button type="button" onClick={() => setBulkRows((rows) => rows.filter((_, rowIndex) => rowIndex !== index))} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600">Remove</button></td>
+                            </tr>
+                          )) : <tr><td colSpan={8} className="p-4 text-center text-sm text-slate-500">No products added in this category yet. Use the button above.</td></tr>}
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+                );
+              })}
+              <button disabled={bulkSaving || bulkRows.length === 0} className="w-full rounded-lg bg-orange-500 px-4 py-3 font-bold text-white hover:bg-orange-600 disabled:opacity-60">{bulkSaving ? "Creating Products..." : "Save All " + bulkRows.length + " Products"}</button>
             </form>
           ) : (
           <form onSubmit={saveProduct} className="space-y-4 rounded-2xl bg-white p-5 shadow-sm">
