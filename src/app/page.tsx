@@ -97,6 +97,7 @@ type HomeProduct = CartProduct & {
   description: string;
   discountMode: string;
   discountPercent: number;
+  bestSeller: boolean;
 };
 
 export default function Home() {
@@ -155,6 +156,7 @@ export default function Home() {
           description: String(data.description ?? ""),
           discountMode: String(data.discountMode ?? "inherit"),
           discountPercent: Number(data.discountPercent ?? 0),
+          bestSeller: data.bestSeller === true,
         }];
       });
       setLiveProducts(rows.sort((a, b) => a.id - b.id));
@@ -178,6 +180,7 @@ export default function Home() {
     .sort((a, b) => getDiscountPercent(b) - getDiscountPercent(a))
     .slice(0, 10);
   const justForYouProducts = liveProducts.filter((product) => product.stock > 0).slice(0, 10);
+  const bestSellerProducts = liveProducts.filter((product) => product.stock > 0 && product.bestSeller).slice(0, 10);
 
   const renderHomepageProductCards = (products: HomeProduct[]) => (
     <div className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -347,6 +350,18 @@ export default function Home() {
             <Link href="/products/" className="rounded-lg border border-blue-900 px-5 py-3 text-sm font-extrabold text-blue-900 hover:bg-blue-950 hover:text-white">Explore all products</Link>
           </div>
           {renderHomepageProductCards(justForYouProducts)}
+        </section>
+      )}
+
+      {content.homeBestSellersEnabled !== "false" && bestSellerProducts.length > 0 && (
+        <section id="best-sellers" className="bg-white py-12 md:py-16">
+          <div className="mx-auto max-w-[1440px] px-3 md:px-5">
+            <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+              <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-600">Customer favourites</p><h2 className="mt-2 text-3xl font-black text-slate-950 md:text-4xl">{content.bestSellersTitle}</h2><p className="mt-2 text-slate-500">{content.bestSellersDescription}</p></div>
+              <Link href="/products/" className="rounded-lg bg-blue-950 px-5 py-3 text-sm font-extrabold text-white hover:bg-blue-800">Shop all products</Link>
+            </div>
+            {renderHomepageProductCards(bestSellerProducts)}
+          </div>
         </section>
       )}
 
