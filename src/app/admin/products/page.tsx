@@ -321,20 +321,28 @@ export default function AdminProductsPage() {
           {showBulkForm ? (
             <form onSubmit={saveBulkProducts} className="space-y-4 rounded-2xl bg-white p-5 shadow-sm">
               <div><h2 className="text-xl font-black text-slate-900">Bulk Add Products</h2><p className="mt-1 text-sm text-slate-600">Enter several products, then save them together.</p></div>
-              {bulkRows.map((row, index) => (
-                <div key={index} className="space-y-3 rounded-xl border border-slate-200 p-3">
-                  <div className="flex items-center justify-between"><h3 className="font-bold text-slate-800">Product {index + 1}</h3>{bulkRows.length > 1 && <button type="button" onClick={() => setBulkRows((rows) => rows.filter((_, rowIndex) => rowIndex !== index))} className="text-sm font-semibold text-red-600">Remove</button>}</div>
-                  <label className="block text-sm font-semibold text-slate-700">Product name<input required value={row.name} onChange={(event) => updateBulkRow(index, "name", event.target.value)} className="mt-1 w-full rounded-lg border px-3 py-2" placeholder="Product name" /></label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <label className="block text-sm font-semibold text-slate-700">Category<select value={row.category} onChange={(event) => updateBulkRow(index, "category", event.target.value)} className="mt-1 w-full rounded-lg border bg-white px-2 py-2 text-sm"><option>Electronics</option><option>Hardware</option><option>Home Services</option></select></label>
-                    <label className="block text-sm font-semibold text-slate-700">Subcategory<select required value={row.subCategory} onChange={(event) => updateBulkRow(index, "subCategory", event.target.value)} className="mt-1 w-full rounded-lg border bg-white px-2 py-2 text-sm"><option value="">Select</option>{availableSubcategories.filter((item) => item.mainCategory === row.category).sort((a, b) => a.name.localeCompare(b.name)).map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}</select></label>
-                    <label className="block text-sm font-semibold text-slate-700">Price (NPR)<input required type="number" min="1" step="1" value={row.price} onChange={(event) => updateBulkRow(index, "price", event.target.value)} className="mt-1 w-full rounded-lg border px-3 py-2" placeholder="Price" /></label>
-                    <label className="block text-sm font-semibold text-slate-700">Stock<input required type="number" min="0" step="1" value={row.stock} onChange={(event) => updateBulkRow(index, "stock", event.target.value)} className="mt-1 w-full rounded-lg border px-3 py-2" /></label>
-                    <label className="col-span-2 block text-sm font-semibold text-slate-700">Unit<select value={row.unit} onChange={(event) => updateBulkRow(index, "unit", event.target.value)} className="mt-1 w-full rounded-lg border bg-white px-3 py-2"><option value="pcs">Piece (pcs)</option><option value="set">Set</option><option value="box">Box</option><option value="pair">Pair</option><option value="kg">Kilogram (kg)</option><option value="meter">Meter (m)</option><option value="feet">Feet (ft)</option><option value="litre">Litre (L)</option><option value="roll">Roll</option><option value="pack">Pack</option><option value="unit">Unit</option><option value="service">Service</option></select></label>
-                  </div>
-                  <label className="block text-sm font-semibold text-slate-700">Description<textarea required rows={2} value={row.description} onChange={(event) => updateBulkRow(index, "description", event.target.value)} className="mt-1 w-full rounded-lg border px-3 py-2" placeholder="Describe this product" /></label>
-                </div>
-              ))}
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full min-w-[1050px] border-collapse text-left text-sm">
+                  <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-600">
+                    <tr><th className="p-3">S.N.</th><th className="p-3">Product name</th><th className="p-3">Category</th><th className="p-3">Subcategory</th><th className="p-3">Price (NPR)</th><th className="p-3">Unit</th><th className="p-3">Stock</th><th className="p-3">Description</th><th className="p-3">Action</th></tr>
+                  </thead>
+                  <tbody>
+                    {bulkRows.map((row, index) => (
+                      <tr key={index} className="border-t border-slate-200 align-top">
+                        <td className="p-3 font-bold text-slate-500">{index + 1}</td>
+                        <td className="p-2"><input required aria-label={"Product " + (index + 1) + " name"} value={row.name} onChange={(event) => updateBulkRow(index, "name", event.target.value)} className="w-40 rounded-lg border px-2 py-2" placeholder="Product name" /></td>
+                        <td className="p-2"><select aria-label="Category" value={row.category} onChange={(event) => updateBulkRow(index, "category", event.target.value)} className="w-36 rounded-lg border bg-white px-2 py-2"><option>Electronics</option><option>Hardware</option><option>Home Services</option></select></td>
+                        <td className="p-2"><select required aria-label="Subcategory" value={row.subCategory} onChange={(event) => updateBulkRow(index, "subCategory", event.target.value)} className="w-40 rounded-lg border bg-white px-2 py-2"><option value="">Select</option>{availableSubcategories.filter((item) => item.mainCategory === row.category).sort((a, b) => a.name.localeCompare(b.name)).map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}</select></td>
+                        <td className="p-2"><input required type="number" min="1" step="1" aria-label="Price in NPR" value={row.price} onChange={(event) => updateBulkRow(index, "price", event.target.value)} className="w-28 rounded-lg border px-2 py-2" placeholder="Price" /></td>
+                        <td className="p-2"><select aria-label="Unit" value={row.unit} onChange={(event) => updateBulkRow(index, "unit", event.target.value)} className="w-28 rounded-lg border bg-white px-2 py-2"><option value="pcs">Piece</option><option value="set">Set</option><option value="box">Box</option><option value="pair">Pair</option><option value="kg">Kg</option><option value="meter">Meter</option><option value="feet">Feet</option><option value="litre">Litre</option><option value="roll">Roll</option><option value="pack">Pack</option><option value="unit">Unit</option><option value="service">Service</option></select></td>
+                        <td className="p-2"><input required type="number" min="0" step="1" aria-label="Stock" value={row.stock} onChange={(event) => updateBulkRow(index, "stock", event.target.value)} className="w-20 rounded-lg border px-2 py-2" /></td>
+                        <td className="p-2"><input required aria-label="Description" value={row.description} onChange={(event) => updateBulkRow(index, "description", event.target.value)} className="w-44 rounded-lg border px-2 py-2" placeholder="Description" /></td>
+                        <td className="p-2">{bulkRows.length > 1 && <button type="button" onClick={() => setBulkRows((rows) => rows.filter((_, rowIndex) => rowIndex !== index))} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600">Remove</button>}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               <button type="button" onClick={() => setBulkRows((rows) => [...rows, emptyBulkProduct()])} className="w-full rounded-lg border-2 border-dashed border-blue-300 px-4 py-3 font-bold text-blue-800 hover:bg-blue-50">+ Add Another Product</button>
               <button disabled={bulkSaving} className="w-full rounded-lg bg-orange-500 px-4 py-3 font-bold text-white hover:bg-orange-600 disabled:opacity-60">{bulkSaving ? "Creating Products..." : "Save All " + bulkRows.length + " Products"}</button>
             </form>
