@@ -10,17 +10,17 @@ const money = (value: number) => "NPR " + Math.round(value).toLocaleString("en-I
 const subRuleId = (main: string, sub: string) => "subcategory:" + main + "::" + sub;
 
 export default function QuotationPage() {
-  const [products,setProducts]=useState<Product[]>([]);
+  const [products,setProducts]=useState<Product[]>([]);\n  const [customServices,setCustomServices]=useState<Product[]>([]);
   const [rules,setRules]=useState<Record<string,number>>({});
   const [lines,setLines]=useState<QuoteLine[]>([]);
   const [name,setName]=useState(""); const [phone,setPhone]=useState(""); const [email,setEmail]=useState(""); const [notes,setNotes]=useState("");
   const [loading,setLoading]=useState(true); const [saving,setSaving]=useState(false); const [error,setError]=useState(""); const [success,setSuccess]=useState("");
   useEffect(()=>{
     const stopProducts=onSnapshot(collection(db,"products"),(snap)=>{setProducts(snap.docs.map((d)=>{const x=d.data();return {docId:d.id,id:Number(x.id??0),name:String(x.name??""),mainCategory:String(x.mainCategory??x.category??"Electronics"),subCategory:String(x.subCategory??""),price:Number(x.price??0),unit:String(x.unit??"pcs"),stock:Number(x.stock??0),active:x.active!==false,imageUrl:String(x.imageUrl??""),discountMode:String(x.discountMode??"inherit"),discountPercent:Number(x.discountPercent??0)};}).filter((p)=>p.active&&p.price>0&&p.mainCategory!=="Home Services").sort((a,b)=>a.name.localeCompare(b.name)));setLoading(false);},(e)=>{console.error(e);setError("Could not load products. Please refresh the page.");setLoading(false);});
-    const stopRules=onSnapshot(collection(db,"pricingRules"),(snap)=>{const next:Record<string,number>={};snap.docs.forEach((d)=>{next[d.id]=Number(d.data().discountPercent??0);});setRules(next);});
-    return ()=>{stopProducts();stopRules();};
+    const stopServices=onSnapshot(collection(db,"quoteServices"),(snap)=>{setCustomServices(snap.docs.map((d)=>{const x=d.data();return {docId:"service:"+d.id,id:0,name:String(x.name??""),mainCategory:String(x.category??"Home Services"),subCategory:"Custom quotation service",price:Number(x.price??0),unit:String(x.unit??"service"),stock:999,active:x.active===true,imageUrl:"",discountMode:"fixed",discountPercent:0};}).filter((p)=>p.active&&p.name));});\n    const stopRules=onSnapshot(collection(db,"pricingRules"),(snap)=>{const next:Record<string,number>={};snap.docs.forEach((d)=>{next[d.id]=Number(d.data().discountPercent??0);});setRules(next);});
+    return ()=>{stopProducts();stopServices();stopRules();};
   },[]);
-  const priced=useMemo(()=>products.map((p)=>{const discount=p.discountMode==="fixed"?0:p.discountMode==="override"?p.discountPercent:(rules[subRuleId(p.mainCategory,p.subCategory)]??rules[p.mainCategory]??0);const safe=Math.min(100,Math.max(0,discount));return {...p,discountPercent:safe,finalPrice:Math.round(p.price*(1-safe/100))};}),[products,rules]);
+  const priced=useMemo(()=>[...products,...customServices].map((p)=>{const discount=p.discountMode==="fixed"?0:p.discountMode==="override"?p.discountPercent:(rules[subRuleId(p.mainCategory,p.subCategory)]??rules[p.mainCategory]??0);const safe=Math.min(100,Math.max(0,discount));return {...p,discountPercent:safe,finalPrice:Math.round(p.price*(1-safe/100))};}),[products,customServices,rules]);
   const selected=lines.flatMap((line)=>{const product=priced.find((p)=>p.docId===line.productId);return product?[{...product,quantity:line.quantity,lineTotal:product.finalPrice*line.quantity}]:[];});
   const subtotal=selected.reduce((sum,p)=>sum+p.price*p.quantity,0); const total=selected.reduce((sum,p)=>sum+p.lineTotal,0); const savings=subtotal-total;
   function add(productId:string){setLines((old)=>old.some((x)=>x.productId===productId)?old.map((x)=>x.productId===productId?{...x,quantity:x.quantity+1}:x):[...old,{productId,quantity:1}]);}
