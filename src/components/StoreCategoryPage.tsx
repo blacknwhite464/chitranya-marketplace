@@ -15,6 +15,8 @@ type StoreProduct = Omit<CartProduct, "stock"> & {
   mainCategory: MainCategory;
   subCategory: string;
   imageUrl?: string;
+  discountMode: string;
+  discountPercent: number;
 };
 
 const MAIN_CATEGORIES: MainCategory[] = ["Electronics", "Hardware", "Home Services"];
@@ -31,6 +33,7 @@ function normalizeMain(value: unknown): MainCategory | null {
 
 export default function StoreCategoryPage({ mainCategory }: { mainCategory: MainCategory | "All" }) {
   const [products, setProducts] = useState<StoreProduct[]>([]);
+  const [pricingRules, setPricingRules] = useState<Record<string, number>>({});
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [selectedSubcategory, setSelectedSubcategory] = useState("All");
   const [search, setSearch] = useState("");
@@ -41,6 +44,18 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
   const [addedId, setAddedId] = useState<number | null>(null);
   const { addToCart, itemCount } = useCart();
   const content = useSiteContent();
+
+  useEffect(() => {
+    const stopRules = onSnapshot(collection(db, "pricingRules"), (snapshot) => {
+      const rules: Record<string, number> = {};
+      snapshot.docs.forEach((entry) => {
+        const percent = Number(entry.data().discountPercent ?? 0);
+        rules[entry.id] = Number.isFinite(percent) ? Math.min(100, Math.max(0, percent)) : 0;
+      });
+      setPricingRules(rules);
+    }, (err) => console.error("Store pricing rules could not be loaded:", err));
+    return () => stopRules();
+  }, []);
 
   useEffect(() => {
     const stopProducts = onSnapshot(collection(db, "products"), (snapshot) => {
@@ -60,6 +75,8 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
           description: String(data.description ?? ""),
           mainCategory: main,
           subCategory: String(data.subCategory ?? ""),
+          discountMode: String(data.discountMode ?? "inherit"),
+          discountPercent: Number(data.discountPercent ?? 0),
         }];
       });
       setProducts(rows.sort((a, b) => a.id - b.id));
@@ -111,6 +128,13 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
     if (sortBy === "stock") return b.stock - a.stock;
     return a.id - b.id;
   }), [products, mainCategory, selectedSubcategory, search, inStockOnly, sortBy]);
+
+  const getDiscountPercent = (product: StoreProduct) => {
+    if (product.discountMode === "fixed") return 0;
+    if (product.discountMode === "override") return Math.min(100, Math.max(0, product.discountPercent || 0));
+    const subcategoryRule = "subcategory:" + product.mainCategory + "::" + product.subCategory;
+    return pricingRules[subcategoryRule] ?? pricingRules[product.mainCategory] ?? 0;
+  };
 
   const heading = mainCategory === "All" ? content.productsTitle : mainCategory === "Electronics" ? content.electronicsPageTitle : mainCategory === "Hardware" ? content.hardwarePageTitle : "Home Services";
   const intro = mainCategory === "All" ? content.productsDescription : mainCategory === "Electronics" ? content.electronicsPageDescription : mainCategory === "Hardware" ? content.hardwarePageDescription : "Find trusted services for your home and business.";
@@ -182,15 +206,21 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
                     )}
                     <span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-[10px] font-extrabold uppercase text-blue-900 shadow">{product.mainCategory}</span>
                     <span className={product.stock > 0 ? "absolute right-3 top-3 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700" : "absolute right-3 top-3 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-600"}>{product.stock > 0 ? "In stock" : "Out of stock"}</span>
+                    {getDiscountPercent(product) > 0 && <span className="absolute bottom-3 left-3 rounded-md bg-red-600 px-3 py-1.5 text-xs font-black text-white shadow">{getDiscountPercent(product)}% OFF</span>}
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col p-3 sm:p-4">
                     <p className="text-[11px] font-bold uppercase text-slate-400">{product.subCategory || product.mainCategory}</p>
                     <h3 className="mt-2 min-h-12 line-clamp-2 font-extrabold text-slate-900"><Link href={"/product/?id=" + product.id} className="transition hover:text-orange-600">{product.name}</Link></h3>
                     <p className="mt-2 min-h-10 line-clamp-2 text-sm leading-5 text-slate-500">{product.description}</p>
-                    <p className="mt-3 text-lg font-black text-blue-950 sm:text-xl">{money(product.price)}</p>
+                    <div className="mt-3 flex flex-wrap items-baseline gap-2">
+                      {getDiscountPercent(product) > 0 ? <>
+                        <p className="text-lg font-black text-red-600 sm:text-xl">{money(Math.round(product.price * (1 - getDiscountPercent(product) / 100)))}</p>
+                        <p className="text-sm font-semibold text-slate-400 line-through">{money(product.price)}</p>
+                      </> : <p className="text-lg font-black text-blue-950 sm:text-xl">{money(product.price)}</p>}
+                    </div>
                     <Link href={"/product/?id=" + product.id} className="mt-4 block rounded-xl border border-slate-200 px-4 py-3 text-center text-sm font-bold text-blue-950 hover:bg-blue-50">View Product Details</Link>
                     {product.subCategory && <Link href={"/" + (product.mainCategory === "Hardware" ? "hardware" : "electronics") + "/?category=" + encodeURIComponent(product.subCategory)} className="mt-2 text-center text-xs font-bold text-slate-500 hover:text-orange-600">More in {product.subCategory}</Link>}
-                    <button onClick={() => { addToCart(product); setAddedId(product.id); }} disabled={product.stock <= 0} className="mt-2 w-full rounded-xl bg-orange-500 px-4 py-3 text-sm font-extrabold text-white transition hover:bg-orange-600 disabled:bg-slate-300">{addedId === product.id ? "Added to Cart" : product.stock > 0 ? "Add to Cart" : "Out of Stock"}</button>
+                    <button onClick={() => { const discount = getDiscountPercent(product); addToCart({ ...product, price: Math.round(product.price * (1 - discount / 100)) }); setAddedId(product.id); }} disabled={product.stock <= 0} className="mt-2 w-full rounded-xl bg-orange-500 px-4 py-3 text-sm font-extrabold text-white transition hover:bg-orange-600 disabled:bg-slate-300">{addedId === product.id ? "Added to Cart" : product.stock > 0 ? "Add to Cart" : "Out of Stock"}</button>
                   </div>
                 </article>
               ))}
