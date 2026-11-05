@@ -295,6 +295,7 @@ export default function Home() {
         )}
       </section>
 
+      {content.homeElectronicsEnabled !== "false" && (
       <section id="electronics" className="mx-auto max-w-7xl px-5 py-20">
         <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
           <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-700">⚡ Shop products</p><h2 className="mt-2 text-3xl font-black md:text-4xl">{content.electronicsTitle}</h2><p className="mt-3 text-slate-500">{content.electronicsDescription}</p></div>
@@ -304,7 +305,11 @@ export default function Home() {
           {homepageCategories.filter((item) => item.mainCategory === "Electronics").map((item) => <CategoryCard key={item.id} item={item} href={`/electronics/?category=${encodeURIComponent(item.name)}`} />)}
         </div>
       </section>
+      )}
 
+
+
+      {content.homeHardwareEnabled !== "false" && (
       <section id="hardware" className="bg-white py-20">
         <div className="mx-auto max-w-7xl px-5">
           <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
@@ -316,6 +321,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
+
+
 
       {content.homeServicesEnabled !== "false" && (
       <section id="services" className="mx-auto max-w-7xl px-5 py-20">
