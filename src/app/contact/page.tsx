@@ -32,7 +32,6 @@ const branches = [
     mobiles: ["9801316271"],
     coordinates: "27.6355123,85.5165676",
     maps: "https://www.google.com/maps/place/Chitranya+hardware+Pvt+ltd/@27.635517,85.5139927,618m/data=!3m2!1e3!4m6!3m5!1s0x39eb0fa46fe1ca2f:0x735dfee131e23216!8m2!3d27.6355123!4d85.5165676!16s%2Fg%2F11rqyv77p2",
-    main: true,
   },
 ];
 
@@ -55,7 +54,6 @@ export default function ContactPage() {
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-xs font-extrabold uppercase tracking-wider text-orange-600">Branch {index + 1}</p>
-                    {branch.main && <span className="rounded-full bg-orange-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-orange-700">Main Branch</span>}
                   </div>
                   <h2 className="mt-2 text-xl font-extrabold text-blue-950">{branch.name}</h2>
                   <p className="mt-2 text-sm text-slate-500">{branch.area}</p>
@@ -92,7 +90,7 @@ export default function ContactPage() {
 
         <div className="mt-8 rounded-2xl border border-blue-100 bg-blue-50 p-6">
           <h2 className="text-lg font-extrabold text-blue-950">CHITRANYA customer support</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">For product enquiries and store assistance, contact the branch directly using the numbers above. Our main branch is clearly marked.</p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">For product enquiries and store assistance, contact the branch directly using the numbers above. </p>
           <Link href="/" className="mt-4 inline-flex text-sm font-extrabold text-blue-900 hover:text-orange-600">← Back to home</Link>
         </div>
       </section>
