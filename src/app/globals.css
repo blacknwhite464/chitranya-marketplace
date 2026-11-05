@@ -25,19 +25,32 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Shop All cards use the same responsive grid sizing as homepage Featured Products. */
-.store-product-card {
+/* Daraz-inspired responsive product cards for Shop All. */
+.store-product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
   width: 100%;
-  max-width: 100%;
   min-width: 0;
+  align-items: stretch;
 }
-.store-product-card > div,
-.store-product-card > div > * {
-  min-width: 0;
-  max-width: 100%;
+@media (min-width: 640px) {
+  .store-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 0.75rem;
+  }
 }
-.store-product-card h3,
-.store-product-card p {
-  overflow-wrap: break-word;
-  word-break: normal;
+@media (min-width: 1024px) {
+  .store-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 1rem;
+  }
 }
+@media (min-width: 1536px) {
+  .store-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(205px, 1fr));
+    gap: 1.25rem;
+  }
+}
+.store-product-card { min-width: 0; width: 100%; }
+.store-product-card h3 { overflow-wrap: anywhere; }
