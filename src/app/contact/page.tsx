@@ -47,6 +47,25 @@ export default function ContactPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-10 md:py-14">
+        <article className="mb-8 overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm">
+          <div className="grid gap-6 p-6 sm:grid-cols-[180px_1fr] sm:items-center md:p-8">
+            <div className="flex aspect-square max-w-[180px] items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-center text-sm font-semibold text-slate-400">
+              Photo coming soon
+            </div>
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-orange-600">Main Admin Contact</p>
+              <h2 className="mt-2 text-2xl font-black text-blue-950">Anil Suwal</h2>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+                Anil Suwal is the main administrative contact for CHITRANYA. Reach out to him for general enquiries, assistance, and coordination related to our stores and services. He will be happy to help direct your request to the right team.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <a href="tel:9801364220" className="rounded-lg bg-blue-950 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-900">Call 9801364220</a>
+                <a href="https://wa.me/9779801364220" target="_blank" rel="noreferrer" className="rounded-lg bg-green-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-green-700">WhatsApp</a>
+                <a href="mailto:chitranyahardware@gmail.com" className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-bold text-blue-950 hover:bg-slate-50">chitranyahardware@gmail.com</a>
+              </div>
+            </div>
+          </div>
+        </article>
         <div className="grid gap-5 sm:grid-cols-2">
           {branches.map((branch, index) => (
             <article key={branch.name} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
