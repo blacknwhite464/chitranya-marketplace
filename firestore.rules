@@ -41,10 +41,6 @@ service cloud.firestore {
         ])
         && request.resource.data.keys().hasOnly([
           'quoteId','customerName','phone','email','notes','items',
-          'itemCount','subtotal','discountTotal','total','status','createdAt'
-        ])
-        && request.resource.data.keys().hasOnly([
-          'quoteId','customerName','phone','email','notes','items',
           'itemCount','subtotal','discountTotal','total','status','createdAt','userId'
         ])
         && (!('userId' in request.resource.data)
