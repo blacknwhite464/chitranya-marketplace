@@ -18,7 +18,6 @@ export default function AdminPricingPage() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
   const [rules, setRules] = useState<Record<string, number>>({});
-  const [ruleEnabled, setRuleEnabled] = useState<Record<string, boolean>>({});
   const [draftRules, setDraftRules] = useState<Record<string, string>>({});
   const [products, setProducts] = useState<Product[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
@@ -42,10 +41,8 @@ export default function AdminPricingPage() {
       setChecking(false);
       stopRules = onSnapshot(collection(db, "pricingRules"), (snapshot) => {
         const next: Record<string, number> = {};
-        const enabled: Record<string, boolean> = {};
-        snapshot.docs.forEach((entry) => { next[entry.id] = Number(entry.data().discountPercent ?? 0); enabled[entry.id] = entry.data().enabled !== false; });
+        snapshot.docs.forEach((entry) => { next[entry.id] = Number(entry.data().discountPercent ?? 0); });
         setRules(next);
-        setRuleEnabled(enabled);
         setDraftRules(Object.fromEntries(MAIN_CATEGORIES.map((category) => [category, String(next[category] ?? 0)])));
         setDraftSubRules((old) => ({ ...old, ...Object.fromEntries(Object.entries(next).filter(([id]) => id.startsWith("subcategory:")).map(([id, value]) => [id, String(value)])) }));
       }, (err) => { console.error(err); setError("Could not load category pricing rules."); });
@@ -89,24 +86,6 @@ export default function AdminPricingPage() {
     finally { setBusy(""); }
   }
 
-  async function toggleDefaultRule(key: string, label: string) {
-    const nextEnabled = ruleEnabled[key] === false;
-    setBusy("visibility:" + key); setError(""); setNotice("");
-    try {
-      await setDoc(doc(db, "pricingRules", key), {
-        discountPercent: rules[key] ?? 0,
-        enabled: nextEnabled,
-        updatedAt: new Date(),
-      }, { merge: true });
-      setNotice(label + (nextEnabled ? " discount is now visible and active." : " discount is now hidden."));
-    } catch (err) {
-      console.error(err);
-      setError("Could not change discount visibility. Check Firestore rules.");
-    } finally {
-      setBusy("");
-    }
-  }
-
   async function saveProduct(product: Product) {
     const draft = draftProducts[product.docId] ?? { mode: "inherit", percent: "0" };
     const percent = Number(draft.percent);
@@ -124,9 +103,9 @@ export default function AdminPricingPage() {
     <header className="bg-slate-950 px-5 py-5 text-white"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-bold tracking-[0.2em] text-orange-400">CHITRANYA</p><h1 className="text-2xl font-black">Pricing & Discounts</h1></div><nav className="flex flex-wrap gap-2"><Link href="/admin/" className="rounded-lg border border-slate-600 px-3 py-2 text-sm">Orders</Link><Link href="/admin/products/" className="rounded-lg border border-slate-600 px-3 py-2 text-sm">Products</Link><Link href="/admin/categories/" className="rounded-lg border border-slate-600 px-3 py-2 text-sm">Categories</Link><Link href="/admin/quotations/" className="rounded-lg border border-orange-500 px-3 py-2 text-sm text-orange-300">Quotations</Link><button onClick={async()=>{await signOut(auth);router.replace("/admin/login/");}} className="rounded-lg bg-orange-500 px-3 py-2 text-sm font-bold">Sign out</button></nav></div></header>
     <section className="mx-auto max-w-7xl space-y-8 px-5 py-8">
       <div><h2 className="text-xl font-black text-slate-900">Category default discounts</h2><p className="mt-1 text-sm text-slate-600">Set the default percentage for each main category. New and inherited products use this rate automatically.</p></div>
-      <div className="grid gap-4 md:grid-cols-3">{MAIN_CATEGORIES.map((category)=><article key={category} className="rounded-2xl bg-white p-5 shadow-sm"><h3 className="font-black text-slate-900">{category}</h3><label className="mt-4 block text-sm font-semibold text-slate-600">Default discount (%)<input type="number" min="0" max="100" step="0.5" value={draftRules[category] ?? "0"} onChange={(e)=>setDraftRules((old)=>({...old,[category]:e.target.value}))} className="mt-1 w-full rounded-lg border px-3 py-3 text-lg font-bold"/></label><button disabled={busy===category} onClick={()=>void saveCategory(category)} className="mt-3 w-full rounded-lg bg-blue-900 px-4 py-3 font-bold text-white disabled:opacity-50">{busy===category?"Saving...":"Save default discount"}</button><button type="button" disabled={busy==="visibility:"+category} onClick={()=>void toggleDefaultRule(category,category)} className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 disabled:opacity-50">{busy==="visibility:"+category?"Updating...":ruleEnabled[category]===false?"Unhide discount":"Hide discount"}</button><p className="mt-2 text-xs text-slate-500">Current saved rate: {rules[category] ?? 0}% · {ruleEnabled[category]===false?"Hidden":"Active"}</p></article>)}</div>
+      <div className="grid gap-4 md:grid-cols-3">{MAIN_CATEGORIES.map((category)=><article key={category} className="rounded-2xl bg-white p-5 shadow-sm"><h3 className="font-black text-slate-900">{category}</h3><label className="mt-4 block text-sm font-semibold text-slate-600">Default discount (%)<input type="number" min="0" max="100" step="0.5" value={draftRules[category] ?? "0"} onChange={(e)=>setDraftRules((old)=>({...old,[category]:e.target.value}))} className="mt-1 w-full rounded-lg border px-3 py-3 text-lg font-bold"/></label><button disabled={busy===category} onClick={()=>void saveCategory(category)} className="mt-3 w-full rounded-lg bg-blue-900 px-4 py-3 font-bold text-white disabled:opacity-50">{busy===category?"Saving...":"Save default discount"}</button><p className="mt-2 text-xs text-slate-500">Current saved rate: {rules[category] ?? 0}%</p></article>)}</div>
       <div><h2 className="text-xl font-black text-slate-900">Subcategory default discounts</h2><p className="mt-1 text-sm text-slate-600">Set a discount for each subcategory. This overrides the main category default for products that inherit pricing.</p></div>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{subcategories.map((item) => { const id = subRuleId(item.mainCategory, item.name); return <article key={item.id} className="rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-bold uppercase tracking-wide text-slate-500">{item.mainCategory}</p><h3 className="mt-1 font-black text-slate-900">{item.name}</h3><label className="mt-3 block text-sm font-semibold text-slate-600">Default discount (%)<input type="number" min="0" max="100" step="0.5" value={draftSubRules[id] ?? String(rules[id] ?? 0)} onChange={(e)=>setDraftSubRules((old)=>({...old,[id]:e.target.value}))} className="mt-1 w-full rounded-lg border px-3 py-2 text-lg font-bold"/></label><button disabled={busy===id} onClick={()=>void saveSubcategory(item)} className="mt-2 w-full rounded-lg bg-blue-900 px-3 py-2 font-bold text-white disabled:opacity-50">{busy===id?"Saving...":"Save subcategory discount"}</button><button type="button" disabled={busy==="visibility:"+id} onClick={()=>void toggleDefaultRule(id,item.name)} className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 disabled:opacity-50">{busy==="visibility:"+id?"Updating...":ruleEnabled[id]===false?"Unhide discount":"Hide discount"}</button><p className="mt-2 text-xs text-slate-500">Saved rate: {rules[id] ?? 0}% · {ruleEnabled[id]===false?"Hidden":"Active"}</p></article>; })}</div>
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{subcategories.map((item) => { const id = subRuleId(item.mainCategory, item.name); return <article key={item.id} className="rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-bold uppercase tracking-wide text-slate-500">{item.mainCategory}</p><h3 className="mt-1 font-black text-slate-900">{item.name}</h3><label className="mt-3 block text-sm font-semibold text-slate-600">Default discount (%)<input type="number" min="0" max="100" step="0.5" value={draftSubRules[id] ?? String(rules[id] ?? 0)} onChange={(e)=>setDraftSubRules((old)=>({...old,[id]:e.target.value}))} className="mt-1 w-full rounded-lg border px-3 py-2 text-lg font-bold"/></label><button disabled={busy===id} onClick={()=>void saveSubcategory(item)} className="mt-2 w-full rounded-lg bg-blue-900 px-3 py-2 font-bold text-white disabled:opacity-50">{busy===id?"Saving...":"Save subcategory discount"}</button><p className="mt-2 text-xs text-slate-500">Saved rate: {rules[id] ?? 0}%</p></article>; })}</div>
       <div><h2 className="text-xl font-black text-slate-900">Individual product pricing</h2><p className="mt-1 text-sm text-slate-600">Inherit category discount, set a product-specific discount, or keep the product at its fixed price.</p></div>
       {error&&<p role="alert" className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}{notice&&<p role="status" className="rounded-xl bg-green-50 p-4 text-sm text-green-700">{notice}</p>}
       <div className="space-y-3">
