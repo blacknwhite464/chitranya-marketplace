@@ -29,11 +29,26 @@ body {
    not only by the browser viewport (important when a sidebar is visible). */
 .store-product-grid {
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
   width: 100%;
   min-width: 0;
   align-items: stretch;
+}
+@media (min-width: 640px) {
+  .store-product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1024px) {
+  .store-product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1280px) {
+  .store-product-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
 }
 .store-product-card {
   width: 100%;
