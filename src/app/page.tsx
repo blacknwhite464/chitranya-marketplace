@@ -317,6 +317,7 @@ export default function Home() {
         </div>
       </section>
 
+      {content.homeServicesEnabled !== "false" && (
       <section id="services" className="mx-auto max-w-7xl px-5 py-20">
         <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
           <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-700">🏡 We are here to help</p><h2 className="mt-2 text-3xl font-black md:text-4xl">{content.servicesTitle}</h2><p className="mt-3 max-w-2xl text-slate-500">{content.servicesDescription}</p></div>
@@ -335,6 +336,7 @@ export default function Home() {
           ))}
         </div>
       </section>
+      )}
 
       <section id="contact" className="bg-blue-950 px-6 py-16 text-center text-white">
         <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-300">💬 CHITRANYA support</p>
