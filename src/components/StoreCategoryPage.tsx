@@ -34,7 +34,6 @@ function normalizeMain(value: unknown): MainCategory | null {
 export default function StoreCategoryPage({ mainCategory }: { mainCategory: MainCategory | "All" }) {
   const [products, setProducts] = useState<StoreProduct[]>([]);
   const [pricingRules, setPricingRules] = useState<Record<string, number>>({});
-  const [pricingRuleEnabled, setPricingRuleEnabled] = useState<Record<string, boolean>>({});
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [selectedSubcategory, setSelectedSubcategory] = useState("All");
   const [search, setSearch] = useState("");
@@ -49,14 +48,11 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
   useEffect(() => {
     const stopRules = onSnapshot(collection(db, "pricingRules"), (snapshot) => {
       const rules: Record<string, number> = {};
-      const enabled: Record<string, boolean> = {};
       snapshot.docs.forEach((entry) => {
         const percent = Number(entry.data().discountPercent ?? 0);
         rules[entry.id] = Number.isFinite(percent) ? Math.min(100, Math.max(0, percent)) : 0;
-        enabled[entry.id] = entry.data().enabled !== false;
       });
       setPricingRules(rules);
-      setPricingRuleEnabled(enabled);
     }, (err) => console.error("Store pricing rules could not be loaded:", err));
     return () => stopRules();
   }, []);
@@ -137,8 +133,7 @@ export default function StoreCategoryPage({ mainCategory }: { mainCategory: Main
     if (product.discountMode === "fixed") return 0;
     if (product.discountMode === "override") return Math.min(100, Math.max(0, product.discountPercent || 0));
     const subcategoryRule = "subcategory:" + product.mainCategory + "::" + product.subCategory;
-    if (pricingRuleEnabled[subcategoryRule] !== false && pricingRules[subcategoryRule] !== undefined) return pricingRules[subcategoryRule];
-    return pricingRuleEnabled[product.mainCategory] === false ? 0 : pricingRules[product.mainCategory] ?? 0;
+    return pricingRules[subcategoryRule] ?? pricingRules[product.mainCategory] ?? 0;
   };
 
   const heading = mainCategory === "All" ? content.productsTitle : mainCategory === "Electronics" ? content.electronicsPageTitle : mainCategory === "Hardware" ? content.hardwarePageTitle : "Home Services";
