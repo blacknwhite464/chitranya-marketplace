@@ -9,6 +9,8 @@ import {
   doc,
   onSnapshot,
   updateDoc,
+  writeBatch,
+  doc as firestoreDoc,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -47,6 +49,8 @@ const emptyForm = {
   imageUrl: "",
 };
 
+type BulkProductForm = { name: string; category: string; subCategory: string; price: string; unit: string; stock: string; description: string; };
+const emptyBulkProduct = (): BulkProductForm => ({ name: "", category: "Electronics", subCategory: "", price: "", unit: "pcs", stock: "10", description: "" });
 const money = (value: number) => "NPR " + value.toLocaleString("en-IN");
 
 export default function AdminProductsPage() {
@@ -61,6 +65,9 @@ export default function AdminProductsPage() {
   const [message, setMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
+  const [showBulkForm, setShowBulkForm] = useState(false);
+  const [bulkRows, setBulkRows] = useState<BulkProductForm[]>([emptyBulkProduct(), emptyBulkProduct()]);
+  const [bulkSaving, setBulkSaving] = useState(false);
 
   useEffect(() => {
     let unsubscribeProducts: (() => void) | undefined;
@@ -226,6 +233,48 @@ export default function AdminProductsPage() {
     }
   }
 
+  function updateBulkRow(index: number, field: keyof BulkProductForm, value: string) {
+    setBulkRows((rows) => rows.map((row, rowIndex) => rowIndex === index ? { ...row, [field]: value, ...(field === "category" ? { subCategory: "" } : {}) } : row));
+  }
+
+  async function saveBulkProducts(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setMessage("");
+    if (bulkRows.length === 0) { setError("Add at least one product row."); return; }
+    for (let index = 0; index < bulkRows.length; index += 1) {
+      const row = bulkRows[index];
+      const price = Number(row.price);
+      const stock = Number(row.stock);
+      if (!row.name.trim() || !row.description.trim() || !row.subCategory || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0) {
+        setError("Please complete the name, subcategory, description, valid price and stock for product row " + (index + 1) + ".");
+        return;
+      }
+    }
+    if (bulkRows.length > 400) { setError("You can create up to 400 products at one time."); return; }
+    setBulkSaving(true);
+    try {
+      const batch = writeBatch(db);
+      const firstId = products.reduce((highest, product) => Math.max(highest, product.id), 0) + 1;
+      bulkRows.forEach((row, index) => {
+        const productRef = firestoreDoc(collection(db, "products"));
+        batch.set(productRef, {
+          id: firstId + index, name: row.name.trim(), category: row.category,
+          mainCategory: row.category, subCategory: row.subCategory, price: Number(row.price),
+          unit: row.unit, emoji: "", imageUrl: "", description: row.description.trim(),
+          specifications: [], stock: Number(row.stock), active: true,
+        });
+      });
+      await batch.commit();
+      setMessage(bulkRows.length + " products created successfully.");
+      setBulkRows([emptyBulkProduct(), emptyBulkProduct()]);
+      setShowBulkForm(false);
+    } catch (bulkError) {
+      console.error(bulkError);
+      setError("Could not create the products. Check your internet connection and Firestore rules, then try again.");
+    } finally { setBulkSaving(false); }
+  }
+
   async function removeProduct(product: Product) {
     const confirmed = window.confirm(`Delete "${product.name}"? This cannot be undone.`);
     if (!confirmed) return;
@@ -266,6 +315,31 @@ export default function AdminProductsPage() {
 
       <section className="mx-auto grid max-w-7xl gap-8 px-5 py-8 lg:grid-cols-[380px_1fr]">
         <div>
+          <div className="mb-4 flex flex-wrap gap-2">
+            <button type="button" onClick={() => setShowBulkForm(false)} className={!showBulkForm ? "rounded-lg bg-blue-800 px-4 py-2 text-sm font-bold text-white" : "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700"}>Add One Product</button>
+            <button type="button" onClick={() => { setShowBulkForm(true); setError(""); setMessage(""); }} className={showBulkForm ? "rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-white" : "rounded-lg border border-orange-300 bg-white px-4 py-2 text-sm font-bold text-orange-700"}>Bulk Add Products</button>
+          </div>
+          {showBulkForm ? (
+            <form onSubmit={saveBulkProducts} className="space-y-4 rounded-2xl bg-white p-5 shadow-sm">
+              <div><h2 className="text-xl font-black text-slate-900">Bulk Add Products</h2><p className="mt-1 text-sm text-slate-600">Enter several products, then save them together.</p></div>
+              {bulkRows.map((row, index) => (
+                <div key={index} className="space-y-3 rounded-xl border border-slate-200 p-3">
+                  <div className="flex items-center justify-between"><h3 className="font-bold text-slate-800">Product {index + 1}</h3>{bulkRows.length > 1 && <button type="button" onClick={() => setBulkRows((rows) => rows.filter((_, rowIndex) => rowIndex !== index))} className="text-sm font-semibold text-red-600">Remove</button>}</div>
+                  <label className="block text-sm font-semibold text-slate-700">Product name<input required value={row.name} onChange={(event) => updateBulkRow(index, "name", event.target.value)} className="mt-1 w-full rounded-lg border px-3 py-2" placeholder="Product name" /></label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className="block text-sm font-semibold text-slate-700">Category<select value={row.category} onChange={(event) => updateBulkRow(index, "category", event.target.value)} className="mt-1 w-full rounded-lg border bg-white px-2 py-2 text-sm"><option>Electronics</option><option>Hardware</option><option>Home Services</option></select></label>
+                    <label className="block text-sm font-semibold text-slate-700">Subcategory<select required value={row.subCategory} onChange={(event) => updateBulkRow(index, "subCategory", event.target.value)} className="mt-1 w-full rounded-lg border bg-white px-2 py-2 text-sm"><option value="">Select</option>{availableSubcategories.filter((item) => item.mainCategory === row.category).sort((a, b) => a.name.localeCompare(b.name)).map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}</select></label>
+                    <label className="block text-sm font-semibold text-slate-700">Price (NPR)<input required type="number" min="1" step="1" value={row.price} onChange={(event) => updateBulkRow(index, "price", event.target.value)} className="mt-1 w-full rounded-lg border px-3 py-2" placeholder="Price" /></label>
+                    <label className="block text-sm font-semibold text-slate-700">Stock<input required type="number" min="0" step="1" value={row.stock} onChange={(event) => updateBulkRow(index, "stock", event.target.value)} className="mt-1 w-full rounded-lg border px-3 py-2" /></label>
+                    <label className="col-span-2 block text-sm font-semibold text-slate-700">Unit<select value={row.unit} onChange={(event) => updateBulkRow(index, "unit", event.target.value)} className="mt-1 w-full rounded-lg border bg-white px-3 py-2"><option value="pcs">Piece (pcs)</option><option value="set">Set</option><option value="box">Box</option><option value="pair">Pair</option><option value="kg">Kilogram (kg)</option><option value="meter">Meter (m)</option><option value="feet">Feet (ft)</option><option value="litre">Litre (L)</option><option value="roll">Roll</option><option value="pack">Pack</option><option value="unit">Unit</option><option value="service">Service</option></select></label>
+                  </div>
+                  <label className="block text-sm font-semibold text-slate-700">Description<textarea required rows={2} value={row.description} onChange={(event) => updateBulkRow(index, "description", event.target.value)} className="mt-1 w-full rounded-lg border px-3 py-2" placeholder="Describe this product" /></label>
+                </div>
+              ))}
+              <button type="button" onClick={() => setBulkRows((rows) => [...rows, emptyBulkProduct()])} className="w-full rounded-lg border-2 border-dashed border-blue-300 px-4 py-3 font-bold text-blue-800 hover:bg-blue-50">+ Add Another Product</button>
+              <button disabled={bulkSaving} className="w-full rounded-lg bg-orange-500 px-4 py-3 font-bold text-white hover:bg-orange-600 disabled:opacity-60">{bulkSaving ? "Creating Products..." : "Save All " + bulkRows.length + " Products"}</button>
+            </form>
+          ) : (
           <form onSubmit={saveProduct} className="space-y-4 rounded-2xl bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-xl font-black text-slate-900">{editingDocId ? "Edit Product" : "Add Product"}</h2>
@@ -333,6 +407,7 @@ export default function AdminProductsPage() {
               {saving ? "Saving..." : editingDocId ? "Save Changes" : "Add Product"}
             </button>
           </form>
+          )}
           {error && <p role="alert" className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}
           {message && <p role="status" className="mt-4 rounded-xl bg-green-50 p-4 text-sm text-green-700">{message}</p>}
         </div>
