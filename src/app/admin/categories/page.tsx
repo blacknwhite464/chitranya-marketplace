@@ -96,8 +96,7 @@ export default function AdminCategoriesPage() {
 
         const productsSnapshot = await getDocs(query(
           collection(db, "products"),
-          where("subCategory", "==", previous.name),
-          where("mainCategory", "==", previous.mainCategory)
+          where("subCategory", "==", previous.name)
         ));
 
         // Update products in safe-sized batches so they remain assigned to the renamed category.
