@@ -29,6 +29,7 @@ type Product = {
   specifications: string[];
   stock: number;
   active: boolean;
+  bestSeller?: boolean;
   mainCategory?: string;
   subCategory?: string;
   unit?: string;
@@ -45,6 +46,7 @@ const emptyForm = {
   specifications: "",
   stock: "10",
   active: true,
+  bestSeller: false,
   imageUrl: "",
 };
 
@@ -136,6 +138,7 @@ export default function AdminProductsPage() {
               specifications: Array.isArray(data.specifications) ? data.specifications : [],
               stock: Number(data.stock ?? 0),
               active: data.active !== false,
+              bestSeller: data.bestSeller === true,
             } as Product;
           });
           list.sort((a, b) => a.id - b.id);
@@ -217,6 +220,7 @@ export default function AdminProductsPage() {
       specifications: product.specifications.join("\n"),
       stock: product.stock > 0 ? "10" : "0",
       active: product.active,
+      bestSeller: product.bestSeller === true,
     });
     setSelectedImage(null);
     setImagePreview(product.imageUrl ?? "");
@@ -283,6 +287,7 @@ export default function AdminProductsPage() {
       specifications: form.specifications.split("\n").map((line) => line.trim()).filter(Boolean),
       stock,
       active: form.active,
+      bestSeller: form.bestSeller,
     };
 
     try {
@@ -633,6 +638,10 @@ export default function AdminProductsPage() {
             <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
               <input type="checkbox" checked={form.active} onChange={(event) => setForm({ ...form, active: event.target.checked })} />
               Visible in store
+            </label>
+            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <input type="checkbox" checked={form.bestSeller} onChange={(event) => setForm({ ...form, bestSeller: event.target.checked })} />
+              Show in Best Sellers on homepage
             </label>
 
             <button disabled={saving} className="w-full rounded-lg bg-blue-800 px-4 py-3 font-bold text-white hover:bg-blue-900 disabled:opacity-60">
