@@ -198,6 +198,7 @@ export default function Home() {
           <Link href="/electronics/" className="whitespace-nowrap hover:text-orange-600">Electronics</Link>
           <Link href="/hardware/" className="whitespace-nowrap hover:text-orange-600">Hardware & Tools</Link>
           <Link href="/services/" className="whitespace-nowrap hover:text-orange-600">Home Services</Link>
+          <Link href="/contact/" className="whitespace-nowrap hover:text-orange-600">Contact</Link>
           <span className="ml-auto hidden whitespace-nowrap text-xs font-semibold text-slate-400 lg:block">SHOP • SERVICES • SOLUTIONS</span>
         </nav>
       </header>
