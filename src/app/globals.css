@@ -24,3 +24,41 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Responsive product layout for Shop All and category pages */
+.store-product-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  width: 100%;
+  min-width: 0;
+}
+.store-product-card {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+.store-product-card > div,
+.store-product-card > div > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.store-product-card h3,
+.store-product-card p {
+  overflow-wrap: anywhere;
+}
+@media (min-width: 640px) {
+  .store-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1024px) {
+  .store-product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1280px) {
+  .store-product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
