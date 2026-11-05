@@ -407,6 +407,25 @@ export default function AdminProductsPage() {
       .some((value) => value.toLowerCase().includes(search));
   });
 
+  const groupedProducts = (() => {
+    const groups = new Map<string, Map<string, Product[]>>();
+    filteredProducts.forEach((product) => {
+      const main = product.mainCategory || product.category || "Uncategorized";
+      const sub = product.subCategory || "Other / No Subcategory";
+      if (!groups.has(main)) groups.set(main, new Map());
+      const subgroups = groups.get(main)!;
+      if (!subgroups.has(sub)) subgroups.set(sub, []);
+      subgroups.get(sub)!.push(product);
+    });
+    return Array.from(groups.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([main, subgroups]) => ({
+        main,
+        count: Array.from(subgroups.values()).reduce((total, items) => total + items.length, 0),
+        subgroups: Array.from(subgroups.entries()).sort(([a], [b]) => a.localeCompare(b)),
+      }));
+  })();
+
   if (checking) {
     return <main className="flex min-h-screen items-center justify-center bg-slate-950 text-white">Checking admin access...</main>;
   }
@@ -595,24 +614,44 @@ export default function AdminProductsPage() {
           {products.length === 0 ? (
             <p className="rounded-2xl bg-white p-6 text-slate-600">No products found. Add your first product using the form.</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {filteredProducts.length === 0 ? (
                 <p className="rounded-2xl bg-white p-6 text-slate-600">No matching products found. Try another product name or category.</p>
-              ) : filteredProducts.map((product) => (
-                <article key={product.docId} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-4 shadow-sm">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-slate-50 p-1">{product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full object-contain" /> : <span className="text-center text-[8px] font-black uppercase leading-tight tracking-wide text-blue-950">CHITRANYA<br/><span className="font-semibold text-slate-400">No Product Photo</span></span>}</div>
-                    <div className="min-w-0">
-                      <h3 className="truncate font-bold text-slate-900">{product.name}</h3>
-                      <p className="text-sm text-slate-500">{product.mainCategory || product.category}{product.subCategory ? " / " + product.subCategory : ""} · {money(product.price)} / {product.unit || "pcs"} · {product.stock > 0 ? "Stock" : "Out of Stock"}</p>
-                      <p className={product.active ? "text-xs font-semibold text-green-700" : "text-xs font-semibold text-slate-500"}>{product.active ? "Visible in store" : "Hidden from store"}</p>
-                    </div>
+              ) : groupedProducts.map((group) => (
+                <details key={group.main} open={Boolean(productSearch.trim())} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 bg-slate-900 px-4 py-4 text-white">
+                    <span className="font-black">{group.main}</span>
+                    <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold">{group.count} products</span>
+                  </summary>
+                  <div className="space-y-4 p-3 sm:p-4">
+                    {group.subgroups.map(([subcategory, items]) => (
+                      <section key={subcategory} className="overflow-hidden rounded-xl border border-slate-200">
+                        <div className="flex items-center justify-between gap-2 bg-slate-100 px-3 py-3">
+                          <h3 className="font-bold text-slate-800">{subcategory}</h3>
+                          <span className="text-xs font-semibold text-slate-500">{items.length} products</span>
+                        </div>
+                        <div className="space-y-2 p-2">
+                          {items.map((product) => (
+                            <article key={product.docId} className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-slate-50 p-3">
+                              <div className="flex min-w-0 items-center gap-3">
+                                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-white p-1">{product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full object-contain" /> : <span className="text-center text-[8px] font-black uppercase leading-tight tracking-wide text-blue-950">CHITRANYA<br/><span className="font-semibold text-slate-400">No Product Photo</span></span>}</div>
+                                <div className="min-w-0">
+                                  <h4 className="truncate font-bold text-slate-900">{product.name}</h4>
+                                  <p className="text-sm text-slate-500">{money(product.price)} / {product.unit || "pcs"} · {product.stock > 0 ? "Stock" : "Out of Stock"}</p>
+                                  <p className={product.active ? "text-xs font-semibold text-green-700" : "text-xs font-semibold text-slate-500"}>{product.active ? "Visible in store" : "Hidden from store"}</p>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <button onClick={() => startEdit(product)} className="rounded-lg border border-blue-700 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50">Edit</button>
+                                <button onClick={() => void removeProduct(product)} className="rounded-lg border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50">Delete</button>
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      </section>
+                    ))}
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => startEdit(product)} className="rounded-lg border border-blue-700 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50">Edit</button>
-                    <button onClick={() => void removeProduct(product)} className="rounded-lg border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50">Delete</button>
-                  </div>
-                </article>
+                </details>
               ))}
             </div>
           )}
