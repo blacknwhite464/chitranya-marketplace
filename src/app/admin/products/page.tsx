@@ -323,11 +323,11 @@ export default function AdminProductsPage() {
         subCategory: column(["subcategory", "subcategoryname"]),
         price: column(["price", "sellingprice", "rate"]),
         unit: column(["unit"]),
-        stock: column(["stock", "quantity", "qty"]),
+        stock: column(["availability", "status", "stock", "quantity", "qty"]),
         description: column(["description", "details"]),
       };
       if (indexes.name < 0 || indexes.category < 0 || indexes.subCategory < 0 || indexes.price < 0) {
-        throw new Error("Missing required columns. Include: name, category, subcategory, price. Optional: unit, stock and description.");
+        throw new Error("Missing required columns. Include: name, category, subcategory, price. Optional: unit, availability and description.");
       }
       const rows = parsed.slice(1).map((cells) => ({
         name: cells[indexes.name] ?? "",
